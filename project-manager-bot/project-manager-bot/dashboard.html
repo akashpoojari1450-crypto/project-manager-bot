@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Project Manager Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f0f2f5; }
+    h1 { color: #333; }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .time { font-size: 24px; font-weight: bold; }
+    .overdue { border-left: 5px solid red; }
+    .urgent { border-left: 5px solid orange; }
+    .ontrack { border-left: 5px solid green; }
+    .done { border-left: 5px solid gray; opacity: 0.6; }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .refresh-info {
+      color: gray;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📋 Project Manager Dashboard</h1>
+    <p class="refresh-info">🔄 Auto-refreshes every 10 seconds</p>
+  </div>
+  <div id="tasks">Loading...</div>
+
+  <script>
+    async function loadTasks() {
+      try {
+        const res = await fetch("/tasks/live");
+        const tasks = await res.json();
+        
+        if (tasks.length === 0) {
+          document.getElementById("tasks").innerHTML = 
+            "<p>No tasks found. Create one using the API!</p>";
+          return;
+        }
+
+        let html = "";
+        tasks.forEach(task => {
+          let cardClass = "ontrack";
+          if (task.is_completed) cardClass = "done";
+          else if (task.time_left.includes("Overdue")) cardClass = "overdue";
+          else if (
+            task.status.includes("URGENT") || 
+            task.status.includes("TOMORROW") || 
+            task.status.includes("TODAY")
+          ) cardClass = "urgent";
+
+          html += `
+            <div class="card ${cardClass}">
+              <h2>📌 ${task.title}</h2>
+              <p>👤 Client: <strong>${task.client_name}</strong> (${task.client_email})</p>
+              <p>📅 Due Date: <strong>${task.due_date}</strong></p>
+              <p class="time">⏳ ${task.time_left}</p>
+              <p>${task.status}</p>
+              <button 
+                onclick="completeTask(${task.id})" 
+                ${task.is_completed ? 'disabled' : ''}>
+                ${task.is_completed ? '✅ Completed' : 'Mark as Complete'}
+              </button>
+            </div>`;
+        });
+        
+        document.getElementById("tasks").innerHTML = html;
+      } catch (err) {
+        document.getElementById("tasks").innerHTML = 
+          "<p style='color:red'>Error loading tasks. Is the server running?</p>";
+      }
+    }
+
+    async function completeTask(id) {
+      await fetch("/tasks/" + id + "/complete", { method: "PUT" });
+      loadTasks();
+    }
+
+    // Load immediately then every 10 seconds
+    loadTasks();
+    setInterval(loadTasks, 10000);
+  </script>
+</body>
+</html>
