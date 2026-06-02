@@ -5,6 +5,54 @@
   <style>
     body { font-family: Arial; padding: 20px; background: #f0f2f5; }
     h1 { color: #333; }
+    
+    /* Form styles */
+    .form-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px 0 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .form-card h2 { margin-top: 0; color: #444; }
+    .form-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .form-row input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      min-width: 200px;
+    }
+    .add-btn {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .add-btn:hover { background: #1976D2; }
+    .success-msg {
+      color: green;
+      font-weight: bold;
+      display: none;
+      margin-top: 8px;
+    }
+    .error-msg {
+      color: red;
+      font-weight: bold;
+      display: none;
+      margin-top: 8px;
+    }
+
+    /* Task card styles */
     .card {
       background: white;
       border-radius: 10px;
@@ -17,7 +65,7 @@
     .urgent { border-left: 5px solid orange; }
     .ontrack { border-left: 5px solid green; }
     .done { border-left: 5px solid gray; opacity: 0.6; }
-    button {
+    .complete-btn {
       background: #4CAF50;
       color: white;
       border: none;
@@ -26,7 +74,7 @@
       cursor: pointer;
       font-size: 14px;
     }
-    button:disabled {
+    .complete-btn:disabled {
       background: gray;
       cursor: not-allowed;
     }
@@ -35,64 +83,135 @@
       justify-content: space-between;
       align-items: center;
     }
-    .refresh-info {
-      color: gray;
-      font-size: 13px;
-    }
+    .refresh-info { color: gray; font-size: 13px; }
   </style>
 </head>
 <body>
+
   <div class="header">
     <h1>📋 Project Manager Dashboard</h1>
     <p class="refresh-info">🔄 Auto-refreshes every 10 seconds</p>
   </div>
+
+  <!-- ✅ NEW TASK FORM -->
+  <div class="form-card">
+    <h2>➕ Add New Task</h2>
+    <div class="form-row">
+      <input type="text" id="title" placeholder="Task title e.g. Submit Report" />
+      <input type="text" id="client_name" placeholder="Client name e.g. Rahul" />
+    </div>
+    <div class="form-row">
+      <input type="email" id="client_email" placeholder="Client email" />
+   <input type="datetime-local" id="due_date" name="due_date" required>
+    </div>
+    <button class="add-btn" onclick="createTask()">➕ Add Task</button>
+    <p class="success-msg" id="success-msg">✅ Task created successfully!</p>
+    <p class="error-msg" id="error-msg">❌ Please fill all fields!</p>
+  </div>
+
+  <!-- TASK LIST -->
   <div id="tasks">Loading...</div>
 
   <script>
+    // ✅ CREATE TASK — reads form, sends to FastAPI
+    async function createTask() {
+      // Step 1: Read values from input boxes
+      const title = document.getElementById("title").value;
+      const client_name = document.getElementById("client_name").value;
+      const client_email = document.getElementById("client_email").value;
+      const due_date = document.getElementById("due_date").value;
+
+      // Step 2: Validate — check nothing is empty
+      if (!title || !client_name || !client_email || !due_date) {
+        document.getElementById("error-msg").style.display = "block";
+        document.getElementById("success-msg").style.display = "none";
+        return;
+      }
+
+      // Step 3: Send to FastAPI /tasks endpoint
+      const response = await fetch("/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title,
+          client_name: client_name,
+          client_email: client_email,
+          due_date: new Date(due_date).toISOString()
+        })
+      });
+
+      // Step 4: Check if it worked
+      if (response.ok) {
+        // Clear the form
+        document.getElementById("title").value = "";
+        document.getElementById("client_name").value = "";
+        document.getElementById("client_email").value = "";
+        document.getElementById("due_date").value = "";
+
+        // Show success message
+        document.getElementById("success-msg").style.display = "block";
+        document.getElementById("error-msg").style.display = "none";
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          document.getElementById("success-msg").style.display = "none";
+        }, 3000);
+
+        // Refresh task list
+        loadTasks();
+      }
+    }
+
+    // ✅ LOAD TASKS — fetches from FastAPI and displays
     async function loadTasks() {
       try {
         const res = await fetch("/tasks/live");
         const tasks = await res.json();
-        
+
         if (tasks.length === 0) {
-          document.getElementById("tasks").innerHTML = 
-            "<p>No tasks found. Create one using the API!</p>";
+          document.getElementById("tasks").innerHTML =
+            "<p>No tasks yet. Add one above!</p>";
           return;
         }
 
         let html = "";
         tasks.forEach(task => {
+          // Decide card color based on status
           let cardClass = "ontrack";
           if (task.is_completed) cardClass = "done";
           else if (task.time_left.includes("Overdue")) cardClass = "overdue";
           else if (
-            task.status.includes("URGENT") || 
-            task.status.includes("TOMORROW") || 
+            task.status.includes("URGENT") ||
+            task.status.includes("TOMORROW") ||
             task.status.includes("TODAY")
           ) cardClass = "urgent";
 
           html += `
             <div class="card ${cardClass}">
               <h2>📌 ${task.title}</h2>
-              <p>👤 Client: <strong>${task.client_name}</strong> (${task.client_email})</p>
+              <p>👤 Client: <strong>${task.client_name}</strong> 
+                 (${task.client_email})</p>
               <p>📅 Due Date: <strong>${task.due_date}</strong></p>
               <p class="time">⏳ ${task.time_left}</p>
               <p>${task.status}</p>
-              <button 
-                onclick="completeTask(${task.id})" 
+              <button
+                class="complete-btn"
+                onclick="completeTask(${task.id})"
                 ${task.is_completed ? 'disabled' : ''}>
                 ${task.is_completed ? '✅ Completed' : 'Mark as Complete'}
               </button>
             </div>`;
         });
-        
+
         document.getElementById("tasks").innerHTML = html;
+
       } catch (err) {
-        document.getElementById("tasks").innerHTML = 
+        document.getElementById("tasks").innerHTML =
           "<p style='color:red'>Error loading tasks. Is the server running?</p>";
       }
     }
 
+    // ✅ COMPLETE TASK
     async function completeTask(id) {
       await fetch("/tasks/" + id + "/complete", { method: "PUT" });
       loadTasks();
@@ -102,5 +221,6 @@
     loadTasks();
     setInterval(loadTasks, 10000);
   </script>
+
 </body>
 </html>
