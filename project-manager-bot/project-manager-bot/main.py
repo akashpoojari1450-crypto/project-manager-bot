@@ -4,6 +4,7 @@ from models import SessionLocal, Task
 from scheduler import start_scheduler
 from pydantic import BaseModel
 from datetime import datetime
+from risk_engine import analyze_risk
 
 app = FastAPI()
 scheduler = start_scheduler()
@@ -72,6 +73,7 @@ def live_tasks():
             status = "🟢 ON TRACK"
             time_left = f"{days_left} days left"
         
+        risk = analyze_risk(task)
         result.append({
             "id": task.id,
             "title": task.title,
@@ -80,7 +82,9 @@ def live_tasks():
             "due_date": task.due_date.strftime("%Y-%m-%d"),
             "time_left": time_left,
             "status": status,
-            "is_completed": task.is_completed
+            "is_completed": task.is_completed,
+            "risk_label": risk["label"],
+            "risk_level": risk["level"]
         })
     
     return result
