@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics | Project Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3c72, #2a69ac); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 20px; }
+  .nav-links a { color: white; text-decoration: none; margin-left: 16px; font-size: 14px; opacity: 0.85; }
+  .nav-links a:hover { opacity: 1; }
+  .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 30px; }
+  .stat-card { background: white; border-radius: 14px; padding: 20px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .stat-card .number { font-size: 36px; font-weight: 700; }
+  .stat-card .label { font-size: 13px; color: #666; margin-top: 4px; }
+  .total .number { color: #1e3c72; }
+  .completed .number { color: #43a047; }
+  .overdue .number { color: #e53935; }
+  .urgent .number { color: #fb8c00; }
+  .rate .number { color: #8e24aa; }
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media(max-width:600px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .chart-card h3 { font-size: 15px; color: #1e3c72; margin-bottom: 18px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📊 Analytics Dashboard</h1>
+  <div class="nav-links">
+    <a href="/">🏠 Dashboard</a>
+    <a href="/report/pdf">📄 PDF Report</a>
+  </div>
+</div>
+<div class="container">
+  <div class="stats-grid">
+    <div class="stat-card total"><div class="number" id="total">-</div><div class="label">Total Tasks</div></div>
+    <div class="stat-card completed"><div class="number" id="completed">-</div><div class="label">Completed</div></div>
+    <div class="stat-card overdue"><div class="number" id="overdue">-</div><div class="label">Overdue</div></div>
+    <div class="stat-card urgent"><div class="number" id="urgent">-</div><div class="label">Urgent</div></div>
+    <div class="stat-card rate"><div class="number" id="rate">-%</div><div class="label">Completion Rate</div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>📋 Task Status Breakdown</h3>
+      <canvas id="statusChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>⚠️ Risk Level Breakdown</h3>
+      <canvas id="riskChart"></canvas>
+    </div>
+  </div>
+</div>
+<script>
+async function loadAnalytics() {
+  const res = await fetch('/analytics/data');
+  const d = await res.json();
+  document.getElementById('total').textContent = d.total;
+  document.getElementById('completed').textContent = d.completed;
+  document.getElementById('overdue').textContent = d.overdue;
+  document.getElementById('urgent').textContent = d.urgent;
+  document.getElementById('rate').textContent = d.completion_rate + '%';
+
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'On Track', 'Urgent', 'Overdue'],
+      datasets: [{ data: [d.completed, d.on_track, d.urgent, d.overdue],
+        backgroundColor: ['#43a047','#1e88e5','#fb8c00','#e53935'],
+        borderWidth: 2 }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+
+  new Chart(document.getElementById('riskChart'), {
+    type: 'bar',
+    data: {
+      labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+      datasets: [{ data: [d.high_risk, d.med_risk, d.low_risk],
+        backgroundColor: ['#e53935','#fb8c00','#43a047'],
+        borderRadius: 8 }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+loadAnalytics();
+</script>
+</body>
+</html>

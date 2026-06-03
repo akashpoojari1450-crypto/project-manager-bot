@@ -160,6 +160,44 @@ def get_me(token: str = Cookie(None)):
         return JSONResponse({"error": "Not logged in"}, status_code=401)
     return {"username": user.username, "email": user.email}
 
+
+@app.get("/analytics")
+def analytics_page(token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return RedirectResponse("/login-page")
+    return FileResponse("analytics.html")
+
+@app.get("/analytics/data")
+def analytics_data(token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    tasks = db.query(Task).filter(Task.user_id == user.id).all()
+    db.close()
+    now = datetime.utcnow()
+    total = len(tasks)
+    completed = sum(1 for t in tasks if t.is_completed)
+    overdue = sum(1 for t in tasks if not t.is_completed and t.due_date < now)
+    urgent = sum(1 for t in tasks if not t.is_completed and 0 <= (t.due_date - now).days <= 3)
+    on_track = total - completed - overdue - urgent
+    from risk_engine import analyze_risk
+    high_risk = sum(1 for t in tasks if not t.is_completed and "HIGH" in analyze_risk(t)["label"])
+    med_risk = sum(1 for t in tasks if not t.is_completed and "MEDIUM" in analyze_risk(t)["label"])
+    low_risk = sum(1 for t in tasks if not t.is_completed and ("LOW" in analyze_risk(t)["label"] or "ON TRACK" in analyze_risk(t)["label"]))
+    return {
+        "total": total,
+        "completed": completed,
+        "overdue": overdue,
+        "urgent": urgent,
+        "on_track": on_track,
+        "high_risk": high_risk,
+        "med_risk": med_risk,
+        "low_risk": low_risk,
+        "completion_rate": round((completed / total * 100) if total else 0, 1)
+    }
+
 @app.get("/")
 def dashboard():
     return FileResponse("dashboard.html")
