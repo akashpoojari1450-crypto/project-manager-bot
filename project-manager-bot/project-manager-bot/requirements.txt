@@ -75,6 +75,7 @@ pandocfilters==1.5.1
 parso==0.8.6
 passlib==1.7.4
 pexpect==4.9.0
+pillow==12.2.0
 platformdirs==4.9.4
 prometheus_client==0.24.1
 prompt_toolkit==3.0.52
@@ -97,6 +98,7 @@ python-multipart==0.0.30
 PyYAML==6.0.3
 pyzmq==27.1.0
 referencing==0.37.0
+reportlab==4.5.1
 requests==2.32.5
 rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1

@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from risk_engine import analyze_risk
 from auth import register_user, login_user, get_user_from_token
+from pdf_report import generate_pdf, generate_completion_report
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 scheduler = start_scheduler()
@@ -64,6 +66,44 @@ def complete_task(task_id: int, token: str = Cookie(None)):
     if task:
         task.is_completed = True
         db.commit()
+        # Generate and email completion report
+        try:
+            task_data = {
+                "title": task.title,
+                "client_name": task.client_name,
+                "client_email": task.client_email,
+                "due_date_raw": task.due_date,
+            }
+            pdf_buffer = generate_completion_report(task_data, user.username, user.email)
+            # Send email with PDF attachment
+            import smtplib
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.text import MIMEText
+            from email.mime.base import MIMEBase
+            from email import encoders
+            from dotenv import load_dotenv
+            load_dotenv("/workspaces/project-manager-bot/project-manager-bot/project-manager-bot/.env")
+            import os
+            sender = os.getenv("EMAIL_USER")
+            password = os.getenv("EMAIL_PASSWORD")
+            msg = MIMEMultipart()
+            msg["From"] = sender
+            msg["To"] = user.email
+            msg["Subject"] = f"✅ Task Completed: {task.title}"
+            msg.attach(MIMEText(f"Hi {user.username},\n\nGreat work! The task '{task.title}' for client {task.client_name} has been marked as complete.\n\nPlease find the completion report attached.\n\nProject Manager Bot", "plain"))
+            attachment = MIMEBase("application", "octet-stream")
+            attachment.set_payload(pdf_buffer.read())
+            encoders.encode_base64(attachment)
+            attachment.add_header("Content-Disposition", f"attachment; filename=completed_{task.title[:20]}.pdf")
+            msg.attach(attachment)
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(sender, password)
+            server.sendmail(sender, user.email, msg.as_string())
+            server.quit()
+            print(f"Completion report sent to {user.email}")
+        except Exception as e:
+            print(f"Completion report email failed: {e}")
     db.close()
     return {"message": "Task marked complete"}
 
