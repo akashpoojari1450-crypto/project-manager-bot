@@ -1,241 +1,316 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Project Manager Dashboard</title>
+  <title>Project Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial; padding: 20px; background: #f0f2f5; }
-    h1 { color: #333; }
-    
-    /* Form styles */
-    .form-card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 10px 0 20px 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .form-card h2 { margin-top: 0; color: #444; }
-    .form-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .form-row input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 14px;
-      min-width: 200px;
-    }
-    .add-btn {
-      background: #2196F3;
-      color: white;
-      border: none;
-      padding: 10px 25px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    .add-btn:hover { background: #1976D2; }
-    .success-msg {
-      color: green;
-      font-weight: bold;
-      display: none;
-      margin-top: 8px;
-    }
-    .error-msg {
-      color: red;
-      font-weight: bold;
-      display: none;
-      margin-top: 8px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; min-height: 100vh; }
 
-    /* Task card styles */
-    .card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 10px 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .time { font-size: 24px; font-weight: bold; }
-    .overdue { border-left: 5px solid red; }
-    .urgent { border-left: 5px solid orange; }
-    .ontrack { border-left: 5px solid green; }
-    .done { border-left: 5px solid gray; opacity: 0.6; }
-    .complete-btn {
-      background: #4CAF50;
+    /* TOP NAV */
+    .navbar {
+      background: linear-gradient(135deg, #1e3c72, #2a69ac);
       color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .complete-btn:disabled {
-      background: gray;
-      cursor: not-allowed;
-    }
-    .header {
+      padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
-    .refresh-info { color: gray; font-size: 13px; }
+    .navbar h1 { font-size: 18px; font-weight: 700; }
+    .navbar-right { display: flex; align-items: center; gap: 12px; }
+    .username { font-size: 13px; opacity: 0.9; }
+    .logout-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+    /* MAIN CONTENT */
+    .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .stat-card .num { font-size: 26px; font-weight: 700; }
+    .stat-card .label { font-size: 11px; color: #888; margin-top: 2px; }
+    .stat-red .num { color: #e53935; }
+    .stat-orange .num { color: #fb8c00; }
+    .stat-green .num { color: #43a047; }
+
+    /* ADD TASK FORM */
+    .form-card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .form-card h2 { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .form-grid input, .form-full input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 9px;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .form-grid input:focus, .form-full input:focus { border-color: #2196F3; }
+    .form-full { margin-bottom: 10px; }
+    .add-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #1e3c72, #2a69ac);
+      color: white;
+      border: none;
+      padding: 13px;
+      border-radius: 9px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .add-btn:hover { opacity: 0.9; }
+    .success-msg { color: #43a047; font-size: 13px; display: none; margin-top: 8px; text-align: center; font-weight: 600; }
+    .error-msg { color: #e53935; font-size: 13px; display: none; margin-top: 8px; text-align: center; font-weight: 600; }
+
+    /* TASK CARDS */
+    .section-title { font-size: 15px; font-weight: 700; color: #444; margin-bottom: 10px; }
+    .task-card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      border-left: 5px solid #ccc;
+      transition: transform 0.15s;
+    }
+    .task-card:hover { transform: translateY(-2px); }
+    .task-card.overdue { border-left-color: #e53935; }
+    .task-card.urgent { border-left-color: #fb8c00; }
+    .task-card.ontrack { border-left-color: #43a047; }
+    .task-card.done { border-left-color: #bbb; opacity: 0.65; }
+
+    .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .task-title { font-size: 16px; font-weight: 700; color: #222; }
+    .task-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-red { background: #ffebee; color: #e53935; }
+    .badge-orange { background: #fff3e0; color: #fb8c00; }
+    .badge-green { background: #e8f5e9; color: #43a047; }
+    .badge-gray { background: #f5f5f5; color: #999; }
+
+    .task-meta { font-size: 13px; color: #666; margin-bottom: 6px; }
+    .task-meta span { margin-right: 12px; }
+    .task-time { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 6px; }
+    .task-risk { font-size: 12px; color: #777; margin-bottom: 10px; }
+
+    .complete-btn {
+      background: #e8f5e9;
+      color: #43a047;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .complete-btn:hover { background: #c8e6c9; }
+    .complete-btn:disabled { background: #f5f5f5; color: #bbb; cursor: not-allowed; }
+
+    .refresh-bar { text-align: center; color: #aaa; font-size: 12px; margin-bottom: 12px; }
+
+    @media (max-width: 480px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .stat-card .num { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>📋 Project Manager Dashboard</h1>
-    <div style="display:flex;gap:15px;align-items:center">
-      <p class="refresh-info">🔄 Auto-refreshes every 10 seconds</p>
-      <span id="username-display" style="color:#555;font-weight:bold"></span>
-      <button onclick="logout()" style="background:#f44336;color:white;border:none;padding:8px 15px;border-radius:5px;cursor:pointer">Logout</button>
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h1>📋 Project Manager</h1>
+    <div class="navbar-right">
+      <span class="username" id="username-display"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
 
-  <!-- ✅ NEW TASK FORM -->
-  <div class="form-card">
-    <h2>➕ Add New Task</h2>
-    <div class="form-row">
-      <input type="text" id="title" placeholder="Task title e.g. Submit Report" />
-      <input type="text" id="client_name" placeholder="Client name e.g. Rahul" />
-    </div>
-    <div class="form-row">
-      <input type="email" id="client_email" placeholder="Client email" />
-   <input type="datetime-local" id="due_date" name="due_date" required>
-    </div>
-    <button class="add-btn" onclick="createTask()">➕ Add Task</button>
-    <p class="success-msg" id="success-msg">✅ Task created successfully!</p>
-    <p class="error-msg" id="error-msg">❌ Please fill all fields!</p>
-  </div>
+  <div class="container">
 
-  <!-- TASK LIST -->
-  <div id="tasks">Loading...</div>
+    <!-- STATS -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card stat-red"><div class="num" id="stat-overdue">0</div><div class="label">Overdue</div></div>
+      <div class="stat-card stat-orange"><div class="num" id="stat-urgent">0</div><div class="label">Urgent</div></div>
+      <div class="stat-card stat-green"><div class="num" id="stat-ontrack">0</div><div class="label">On Track</div></div>
+    </div>
+
+    <!-- ADD TASK FORM -->
+    <div class="form-card">
+      <h2>➕ Add New Task</h2>
+      <div class="form-grid">
+        <input type="text" id="title" placeholder="Task title" />
+        <input type="text" id="client_name" placeholder="Client name" />
+      </div>
+      <div class="form-full">
+        <input type="email" id="client_email" placeholder="Client email" />
+      </div>
+      <div class="form-full">
+        <input type="datetime-local" id="due_date" />
+      </div>
+      <button class="add-btn" onclick="createTask()">➕ Add Task</button>
+      <p class="success-msg" id="success-msg">✅ Task created!</p>
+      <p class="error-msg" id="error-msg">❌ Please fill all fields!</p>
+    </div>
+
+    <!-- TASK LIST -->
+    <div class="section-title">📌 Your Tasks</div>
+    <div class="refresh-bar">🔄 Auto-refreshes every 10 seconds</div>
+    <div id="tasks">Loading...</div>
+
+  </div>
 
   <script>
-    // ✅ CREATE TASK — reads form, sends to FastAPI
-    async function createTask() {
-      // Step 1: Read values from input boxes
-      const title = document.getElementById("title").value;
-      const client_name = document.getElementById("client_name").value;
-      const client_email = document.getElementById("client_email").value;
-      const due_date = document.getElementById("due_date").value;
-
-      // Step 2: Validate — check nothing is empty
-      if (!title || !client_name || !client_email || !due_date) {
-        document.getElementById("error-msg").style.display = "block";
-        document.getElementById("success-msg").style.display = "none";
-        return;
-      }
-
-      // Step 3: Send to FastAPI /tasks endpoint
-      const response = await fetch("/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title,
-          client_name: client_name,
-          client_email: client_email,
-          due_date: new Date(due_date).toISOString()
-        })
-      });
-
-      // Step 4: Check if it worked
-      if (response.ok) {
-        // Clear the form
-        document.getElementById("title").value = "";
-        document.getElementById("client_name").value = "";
-        document.getElementById("client_email").value = "";
-        document.getElementById("due_date").value = "";
-
-        // Show success message
-        document.getElementById("success-msg").style.display = "block";
-        document.getElementById("error-msg").style.display = "none";
-
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          document.getElementById("success-msg").style.display = "none";
-        }, 3000);
-
-        // Refresh task list
-        loadTasks();
-      }
+    async function logout() {
+      await fetch("/logout", { method: "POST" });
+      window.location.href = "/login-page";
     }
 
-    // ✅ LOAD TASKS — fetches from FastAPI and displays
-    async function loadTasks() {
-      try {
-        const res = await fetch("/tasks/live");
-        const tasks = await res.json();
-
-        if (tasks.length === 0) {
-          document.getElementById("tasks").innerHTML =
-            "<p>No tasks yet. Add one above!</p>";
-          return;
-        }
-
-        let html = "";
-        tasks.forEach(task => {
-          // Decide card color based on status
-          let cardClass = "ontrack";
-          if (task.is_completed) cardClass = "done";
-          else if (task.time_left.includes("Overdue")) cardClass = "overdue";
-          else if (
-            task.status.includes("URGENT") ||
-            task.status.includes("TOMORROW") ||
-            task.status.includes("TODAY")
-          ) cardClass = "urgent";
-
-          html += `
-            <div class="card ${cardClass}">
-              <h2>📌 ${task.title}</h2>
-              <p>👤 Client: <strong>${task.client_name}</strong> 
-                 (${task.client_email})</p>
-              <p>📅 Due Date: <strong>${task.due_date}</strong></p>
-              <p class="time">⏳ ${task.time_left}</p>
-              <p>${task.status}</p>
-              <button
-                class="complete-btn"
-                onclick="completeTask(${task.id})"
-                ${task.is_completed ? 'disabled' : ''}>
-                ${task.is_completed ? '✅ Completed' : 'Mark as Complete'}
-              </button>
-            </div>`;
-        });
-
-        document.getElementById("tasks").innerHTML = html;
-
-      } catch (err) {
-        document.getElementById("tasks").innerHTML =
-          "<p style='color:red'>Error loading tasks. Is the server running?</p>";
-      }
-    }
-
-    // ✅ COMPLETE TASK
-    async function completeTask(id) {
-      await fetch("/tasks/" + id + "/complete", { method: "PUT" });
-      loadTasks();
-    }
-
-    // Check login first
     async function checkLogin() {
       const res = await fetch("/me");
-      if (res.status === 401) {
-        window.location.href = "/login-page";
-        return;
-      }
+      if (res.status === 401) { window.location.href = "/login-page"; return; }
       const user = await res.json();
       document.getElementById("username-display").innerText = "👤 " + user.username;
       loadTasks();
       setInterval(loadTasks, 10000);
     }
 
+    async function createTask() {
+      const title = document.getElementById("title").value;
+      const client_name = document.getElementById("client_name").value;
+      const client_email = document.getElementById("client_email").value;
+      const due_date = document.getElementById("due_date").value;
+      if (!title || !client_name || !client_email || !due_date) {
+        document.getElementById("error-msg").style.display = "block";
+        document.getElementById("success-msg").style.display = "none";
+        return;
+      }
+      const res = await fetch("/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, client_name, client_email, due_date: new Date(due_date).toISOString() })
+      });
+      if (res.ok) {
+        document.getElementById("title").value = "";
+        document.getElementById("client_name").value = "";
+        document.getElementById("client_email").value = "";
+        document.getElementById("due_date").value = "";
+        document.getElementById("success-msg").style.display = "block";
+        document.getElementById("error-msg").style.display = "none";
+        setTimeout(() => document.getElementById("success-msg").style.display = "none", 3000);
+        loadTasks();
+      }
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch("/tasks/live");
+        if (res.status === 401) { window.location.href = "/login-page"; return; }
+        const tasks = await res.json();
+
+        // Update stats
+        let overdue = 0, urgent = 0, ontrack = 0;
+        tasks.forEach(t => {
+          if (!t.is_completed) {
+            if (t.status.includes("OVERDUE")) overdue++;
+            else if (t.status.includes("URGENT") || t.status.includes("TODAY") || t.status.includes("TOMORROW")) urgent++;
+            else ontrack++;
+          }
+        });
+        document.getElementById("stat-overdue").innerText = overdue;
+        document.getElementById("stat-urgent").innerText = urgent;
+        document.getElementById("stat-ontrack").innerText = ontrack;
+
+        if (tasks.length === 0) {
+          document.getElementById("tasks").innerHTML = "<p style=\"color:#aaa;text-align:center;padding:30px\">No tasks yet. Add one above!</p>";
+          return;
+        }
+
+        let html = "";
+        tasks.forEach(task => {
+          let cardClass = "ontrack";
+          let badgeClass = "badge-green";
+          let badgeText = "ON TRACK";
+          if (task.is_completed) { cardClass = "done"; badgeClass = "badge-gray"; badgeText = "DONE"; }
+          else if (task.status.includes("OVERDUE")) { cardClass = "overdue"; badgeClass = "badge-red"; badgeText = "OVERDUE"; }
+          else if (task.status.includes("TODAY")) { cardClass = "urgent"; badgeClass = "badge-red"; badgeText = "TODAY"; }
+          else if (task.status.includes("TOMORROW")) { cardClass = "urgent"; badgeClass = "badge-orange"; badgeText = "TOMORROW"; }
+          else if (task.status.includes("URGENT")) { cardClass = "urgent"; badgeClass = "badge-orange"; badgeText = "URGENT"; }
+
+          html += `
+            <div class="task-card ${cardClass}">
+              <div class="task-header">
+                <div class="task-title">${task.title}</div>
+                <span class="task-badge ${badgeClass}">${badgeText}</span>
+              </div>
+              <div class="task-meta">
+                <span>👤 ${task.client_name}</span>
+                <span>📧 ${task.client_email}</span>
+              </div>
+              <div class="task-meta">📅 Due: ${task.due_date}</div>
+              <div class="task-time">⏳ ${task.time_left}</div>
+              <div class="task-risk">${task.risk_label}</div>
+              <button class="complete-btn" onclick="completeTask(${task.id})" ${task.is_completed ? "disabled" : ""}>
+                ${task.is_completed ? "✅ Completed" : "Mark as Complete ✓"}
+              </button>
+            </div>`;
+        });
+        document.getElementById("tasks").innerHTML = html;
+      } catch (err) {
+        document.getElementById("tasks").innerHTML = "<p style=\"color:red;text-align:center\">Error loading tasks.</p>";
+      }
+    }
+
+    async function completeTask(id) {
+      await fetch("/tasks/" + id + "/complete", { method: "PUT" });
+      loadTasks();
+    }
+
     checkLogin();
   </script>
-
 </body>
 </html>
