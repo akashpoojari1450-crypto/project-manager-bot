@@ -198,6 +198,81 @@ def analytics_data(token: str = Cookie(None)):
         "completion_rate": round((completed / total * 100) if total else 0, 1)
     }
 
+
+
+
+
+
+
+@app.post("/chat")
+async def chat(request: Request, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+
+    db = SessionLocal()
+    tasks = db.query(Task).filter(Task.user_id == user.id).all()
+    db.close()
+
+    body = await request.json()
+    user_message = body.get("message", "")
+    history = body.get("history", [])
+
+    from datetime import timedelta
+    from risk_engine import analyze_risk
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    now = datetime.utcnow()
+    IST = timedelta(hours=5, minutes=30)
+    task_lines = []
+    for t in tasks:
+        days_left = (t.due_date - now).days
+        if t.is_completed: status = "Completed"
+        elif days_left < 0: status = f"Overdue by {abs(days_left)} days"
+        elif days_left == 0: status = "Due Today"
+        elif days_left <= 3: status = f"Urgent - {days_left} days left"
+        else: status = f"On Track - {days_left} days left"
+        risk = analyze_risk(t)
+        task_lines.append(
+            f"- [{status}] {t.title} | Client: {t.client_name} | "
+            f"Due: {(t.due_date+IST).strftime('%d %b %Y')} | Risk: {risk['label']}"
+        )
+
+    tasks_text = "\n".join(task_lines) if task_lines else "No tasks yet."
+
+    system_prompt = f"""You are a smart AI assistant for {user.username}, a project manager.
+
+You have access to their live task data:
+{tasks_text}
+
+You can:
+- Answer questions about their tasks, deadlines, risks
+- Give project management advice
+- Answer any general question like ChatGPT
+- Help write emails, plans, summaries
+
+Be helpful, friendly, and concise. Use emojis where appropriate."""
+
+    messages = []
+    for h in history[-10:]:
+        messages.append({"role": h["role"], "content": h["content"]})
+    messages.append({"role": "user", "content": user_message})
+
+    from groq import Groq
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "system", "content": system_prompt}] + messages,
+        max_tokens=1024,
+        temperature=0.7
+    )
+
+    reply = response.choices[0].message.content
+    return {"reply": reply}
+
 @app.get("/")
 def dashboard():
     return FileResponse("dashboard.html")

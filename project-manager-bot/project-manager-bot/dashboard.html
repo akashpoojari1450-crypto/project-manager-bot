@@ -157,7 +157,34 @@
       .stats-row { grid-template-columns: repeat(3, 1fr); }
       .stat-card .num { font-size: 22px; }
     }
-  </style>
+  
+    body.dark { background: #1a1a2e; color: #e0e0e0; }
+    body.dark .task-card { background: #16213e; border-color: #0f3460; color: #e0e0e0; }
+    body.dark .header { background: linear-gradient(135deg, #0f3460, #16213e); }
+    body.dark .modal-box { background: #16213e; color: #e0e0e0; }
+    body.dark input, body.dark textarea { background: #0f3460; color: #e0e0e0; border-color: #1a1a2e; }
+    body.dark .section-title { color: #90caf9; }
+    body.dark .add-btn { background: linear-gradient(135deg, #0f3460, #16213e); }
+    body.dark .complete-btn { background: #1b5e20; color: #a5d6a7; }
+    body.dark .complete-btn:disabled { background: #263238; color: #546e7a; }
+    body.dark .risk-badge { background: #0f3460; }
+    body.dark .stat-card { background: #16213e; }
+
+    .chat-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #1e3c72, #2a69ac); color: white; font-size: 24px; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 1000; }
+    .chat-box { position: fixed; bottom: 90px; right: 24px; width: 340px; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 1000; display: none; flex-direction: column; max-height: 480px; }
+    body.dark .chat-box { background: #16213e; color: #e0e0e0; }
+    .chat-header { background: linear-gradient(135deg, #1e3c72, #2a69ac); color: white; padding: 14px 16px; border-radius: 16px 16px 0 0; font-weight: 600; font-size: 14px; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 320px; }
+    .msg { padding: 10px 13px; border-radius: 12px; font-size: 13px; max-width: 85%; line-height: 1.4; }
+    .msg.user { background: #1e3c72; color: white; align-self: flex-end; border-radius: 12px 12px 0 12px; }
+    .msg.bot { background: #f0f4f8; color: #333; align-self: flex-start; border-radius: 12px 12px 12px 0; }
+    body.dark .msg.bot { background: #0f3460; color: #e0e0e0; }
+    .chat-input-row { display: flex; padding: 10px; gap: 8px; border-top: 1px solid #eee; }
+    body.dark .chat-input-row { border-color: #0f3460; }
+    .chat-input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }
+    body.dark .chat-input { background: #0f3460; color: #e0e0e0; border-color: #1a1a2e; }
+    .chat-send { background: #1e3c72; color: white; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; }
+</style>
 </head>
 <body>
 
@@ -166,6 +193,7 @@
     <h1>📋 Project Manager</h1>
     <div class="navbar-right">
       <span class="username" id="username-display"></span>
+      <button class="logout-btn" onclick="toggleDark()" id="darkBtn" style="margin-right:8px">🌙 Dark</button>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
@@ -313,6 +341,54 @@
     }
 
     checkLogin();
-  </script>
+  
+function toggleDark() {
+    const isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('darkBtn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+}
+// Apply saved preference on load
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+    document.getElementById('darkBtn').textContent = '☀️ Light';
+}
+
+function toggleChat() {
+    const box = document.getElementById('chatBox');
+    box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+}
+async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const messages = document.getElementById('chatMessages');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    messages.innerHTML += `<div class="msg user">${msg}</div>`;
+    messages.innerHTML += `<div class="msg bot" id="typing">...</div>`;
+    messages.scrollTop = messages.scrollHeight;
+    const res = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: msg})
+    });
+    const data = await res.json();
+    document.getElementById('typing').remove();
+    messages.innerHTML += `<div class="msg bot">${data.reply || 'Sorry, something went wrong.'}</div>`;
+    messages.scrollTop = messages.scrollHeight;
+}
+</script>
+
+  <!-- Chatbot -->
+  <button class="chat-fab" onclick="toggleChat()">🤖</button>
+  <div class="chat-box" id="chatBox">
+    <div class="chat-header">🤖 AI Task Assistant</div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot">Hi! I know all your tasks. Ask me anything — "what's overdue?", "highest risk task?", "summarize my week" 👋</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Ask about your tasks..." onkeydown="if(event.key==='Enter') sendChat()">
+      <button class="chat-send" onclick="sendChat()">Send</button>
+    </div>
+  </div>
 </body>
 </html>
