@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv('/workspaces/project-manager-bot/project-manager-bot/project-manager-bot/.env')
 
 def send_email(to_email, subject, body):
     sender = os.getenv("EMAIL_USER")

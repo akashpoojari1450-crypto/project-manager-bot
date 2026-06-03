@@ -90,7 +90,11 @@
 
   <div class="header">
     <h1>📋 Project Manager Dashboard</h1>
-    <p class="refresh-info">🔄 Auto-refreshes every 10 seconds</p>
+    <div style="display:flex;gap:15px;align-items:center">
+      <p class="refresh-info">🔄 Auto-refreshes every 10 seconds</p>
+      <span id="username-display" style="color:#555;font-weight:bold"></span>
+      <button onclick="logout()" style="background:#f44336;color:white;border:none;padding:8px 15px;border-radius:5px;cursor:pointer">Logout</button>
+    </div>
   </div>
 
   <!-- ✅ NEW TASK FORM -->
@@ -217,9 +221,20 @@
       loadTasks();
     }
 
-    // Load immediately then every 10 seconds
-    loadTasks();
-    setInterval(loadTasks, 10000);
+    // Check login first
+    async function checkLogin() {
+      const res = await fetch("/me");
+      if (res.status === 401) {
+        window.location.href = "/login-page";
+        return;
+      }
+      const user = await res.json();
+      document.getElementById("username-display").innerText = "👤 " + user.username;
+      loadTasks();
+      setInterval(loadTasks, 10000);
+    }
+
+    checkLogin();
   </script>
 
 </body>

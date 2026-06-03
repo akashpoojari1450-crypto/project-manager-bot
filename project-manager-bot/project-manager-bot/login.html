@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - Project Manager</title>
+  <style>
+    body { font-family: Arial; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); width: 350px; }
+    h2 { text-align: center; color: #333; margin-bottom: 20px; }
+    input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 15px; cursor: pointer; margin-top: 8px; }
+    .blue { background: #2196F3; color: white; }
+    .green { background: #4CAF50; color: white; }
+    .msg { text-align: center; margin-top: 10px; font-weight: bold; }
+    .error { color: red; }
+    .success { color: green; }
+    .toggle { text-align: center; margin-top: 15px; color: #2196F3; cursor: pointer; text-decoration: underline; }
+    #register-form { display: none; }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- LOGIN FORM -->
+  <div id="login-form">
+    <h2>🔐 Login</h2>
+    <input type="text" id="login-username" placeholder="Username" />
+    <input type="password" id="login-password" placeholder="Password" />
+    <button class="btn blue" onclick="doLogin()">Login</button>
+    <p class="msg" id="login-msg"></p>
+    <p class="toggle" onclick="showRegister()">No account? Register here</p>
+  </div>
+
+  <!-- REGISTER FORM -->
+  <div id="register-form">
+    <h2>📝 Register</h2>
+    <input type="text" id="reg-username" placeholder="Username" />
+    <input type="email" id="reg-email" placeholder="Email" />
+    <input type="password" id="reg-password" placeholder="Password" />
+    <button class="btn green" onclick="doRegister()">Create Account</button>
+    <p class="msg" id="reg-msg"></p>
+    <p class="toggle" onclick="showLogin()">Already have account? Login here</p>
+  </div>
+
+</div>
+<script>
+  function showRegister() {
+    document.getElementById("login-form").style.display = "none";
+    document.getElementById("register-form").style.display = "block";
+  }
+  function showLogin() {
+    document.getElementById("register-form").style.display = "none";
+    document.getElementById("login-form").style.display = "block";
+  }
+
+  async function doLogin() {
+    const username = document.getElementById("login-username").value.trim();
+    const password = document.getElementById("login-password").value.trim();
+    const msg = document.getElementById("login-msg");
+    if (!username || !password) {
+      msg.className = "msg error"; msg.innerText = "Fill all fields!"; return;
+    }
+    const res = await fetch("/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: username, password: password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msg.className = "msg success"; msg.innerText = "Login successful!";
+      setTimeout(() => window.location.href = "/", 800);
+    } else {
+      msg.className = "msg error"; msg.innerText = "❌ " + data.error;
+    }
+  }
+
+  async function doRegister() {
+    const username = document.getElementById("reg-username").value.trim();
+    const email = document.getElementById("reg-email").value.trim();
+    const password = document.getElementById("reg-password").value.trim();
+    const msg = document.getElementById("reg-msg");
+    if (!username || !email || !password) {
+      msg.className = "msg error"; msg.innerText = "Fill all fields!"; return;
+    }
+    const res = await fetch("/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: username, email: email, password: password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msg.className = "msg success"; msg.innerText = "Account created! Please login.";
+      setTimeout(() => showLogin(), 1500);
+    } else {
+      msg.className = "msg error"; msg.innerText = "❌ " + data.error;
+    }
+  }
+</script>
+</body>
+</html>
