@@ -23,6 +23,7 @@ class Task(Base):
     title = Column(String)
     client_name = Column(String)
     client_email = Column(String)
+    client_token = Column(String, unique=True)
     due_date = Column(DateTime)
     is_completed = Column(Boolean, default=False)
     alert_3day_sent = Column(Boolean, default=False)

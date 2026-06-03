@@ -273,6 +273,66 @@ Be helpful, friendly, and concise. Use emojis where appropriate."""
     reply = response.choices[0].message.content
     return {"reply": reply}
 
+
+import secrets
+
+@app.get("/portal/generate/{task_id}")
+def generate_portal_link(task_id: int, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    task = db.query(Task).filter(Task.id == task_id, Task.user_id == user.id).first()
+    if not task:
+        db.close()
+        return JSONResponse({"error": "Task not found"}, status_code=404)
+    if not task.client_token:
+        task.client_token = secrets.token_urlsafe(32)
+        db.commit()
+    token_val = task.client_token
+    db.close()
+    return {"portal_url": f"/portal/{token_val}"}
+
+@app.get("/portal/{client_token}")
+def client_portal(client_token: str):
+    db = SessionLocal()
+    task = db.query(Task).filter(Task.client_token == client_token).first()
+    if not task:
+        db.close()
+        return HTMLResponse("<h2>Invalid or expired link.</h2>", status_code=404)
+    db.close()
+    return FileResponse("client_portal.html")
+
+@app.get("/portal/{client_token}/data")
+def client_portal_data(client_token: str):
+    db = SessionLocal()
+    task = db.query(Task).filter(Task.client_token == client_token).first()
+    if not task:
+        db.close()
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    from risk_engine import analyze_risk
+    from datetime import timedelta
+    IST = timedelta(hours=5, minutes=30)
+    now = __import__("datetime").datetime.utcnow()
+    days_left = (task.due_date - now).days
+    if task.is_completed: status = "Completed"
+    elif days_left < 0: status = f"Overdue by {abs(days_left)} days"
+    elif days_left == 0: status = "Due Today"
+    elif days_left <= 3: status = f"Urgent - {days_left} days left"
+    else: status = f"On Track - {days_left} days left"
+    risk = analyze_risk(task)
+    db.close()
+    return {
+        "title": task.title,
+        "client_name": task.client_name,
+        "due_date": (task.due_date + IST).strftime("%d %b %Y"),
+        "status": status,
+        "risk": risk["label"],
+        "is_completed": task.is_completed,
+        "days_left": days_left,
+        "description": getattr(task, "description", "")
+    }
+
 @app.get("/")
 def dashboard():
     return FileResponse("dashboard.html")

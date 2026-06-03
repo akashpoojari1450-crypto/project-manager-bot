@@ -324,6 +324,7 @@
               <div class="task-meta">📅 Due: ${task.due_date}</div>
               <div class="task-time">⏳ ${task.time_left}</div>
               <div class="task-risk">${task.risk_label}</div>
+              <button onclick="sharePortal(${task.id})" style="background:#e3f2fd;color:#1565c0;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-right:6px">🔗 Share</button>
               <button class="complete-btn" onclick="completeTask(${task.id})" ${task.is_completed ? "disabled" : ""}>
                 ${task.is_completed ? "✅ Completed" : "Mark as Complete ✓"}
               </button>
@@ -376,6 +377,19 @@ async function sendChat() {
     messages.innerHTML += `<div class="msg bot">${data.reply || 'Sorry, something went wrong.'}</div>`;
     messages.scrollTop = messages.scrollHeight;
 }
+
+async function sharePortal(taskId) {
+  const res = await fetch(`/portal/generate/${taskId}`);
+  const data = await res.json();
+  if (data.portal_url) {
+    const fullUrl = window.location.origin + data.portal_url;
+    await navigator.clipboard.writeText(fullUrl);
+    alert('✅ Client portal link copied!\n\n' + fullUrl + '\n\nShare this link with your client.');
+  } else {
+    alert('Error generating link.');
+  }
+}
+
 </script>
 
   <!-- Chatbot -->

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Status | Client Portal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
+  .header {
+    background: linear-gradient(135deg, #1e3c72, #2a69ac);
+    color: white; padding: 24px;
+    text-align: center;
+  }
+  .header h1 { font-size: 22px; margin-bottom: 4px; }
+  .header p { opacity: 0.8; font-size: 14px; }
+  .container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
+  .card {
+    background: white; border-radius: 20px;
+    padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+  .project-title { font-size: 24px; font-weight: 700; color: #1e3c72; margin-bottom: 6px; }
+  .client-name { font-size: 15px; color: #666; margin-bottom: 24px; }
+  .info-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 14px 0;
+    border-bottom: 1px solid #f0f4f8;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { font-size: 13px; color: #888; font-weight: 500; }
+  .info-value { font-size: 14px; font-weight: 600; color: #222; }
+  .status-badge {
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+  .status-completed { background: #e8f5e9; color: #2e7d32; }
+  .status-overdue { background: #ffebee; color: #c62828; }
+  .status-urgent { background: #fff3e0; color: #e65100; }
+  .status-ontrack { background: #e3f2fd; color: #1565c0; }
+  .progress-wrap { margin-top: 24px; }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: #666; margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 12px; background: #e0e0e0;
+    border-radius: 6px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, #1e3c72, #2a69ac);
+    transition: width 1s ease;
+  }
+  .completed-banner {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+    color: white; border-radius: 16px;
+    padding: 20px; text-align: center;
+    font-size: 16px; font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .risk-high { color: #c62828; }
+  .risk-medium { color: #e65100; }
+  .risk-low { color: #2e7d32; }
+  .footer {
+    text-align: center; color: #aaa;
+    font-size: 12px; margin-top: 30px;
+    padding-bottom: 30px;
+  }
+  .loading { text-align: center; padding: 60px; color: #888; font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📋 Project Status Portal</h1>
+  <p>Real-time update for your project</p>
+</div>
+
+<div class="container">
+  <div id="content" class="loading">Loading your project status...</div>
+</div>
+
+<script>
+const token = window.location.pathname.split('/portal/')[1];
+
+async function loadPortal() {
+  const res = await fetch(`/portal/${token}/data`);
+  const d = await res.json();
+  if (d.error) {
+    document.getElementById('content').innerHTML = '<div class="card"><p>Invalid or expired link.</p></div>';
+    return;
+  }
+
+  let statusClass = 'status-ontrack';
+  if (d.is_completed) statusClass = 'status-completed';
+  else if (d.status.includes('Overdue')) statusClass = 'status-overdue';
+  else if (d.status.includes('Urgent')) statusClass = 'status-urgent';
+
+  let riskClass = 'risk-low';
+  if (d.risk.includes('HIGH')) riskClass = 'risk-high';
+  else if (d.risk.includes('MEDIUM')) riskClass = 'risk-medium';
+
+  let progress = 50;
+  if (d.is_completed) progress = 100;
+  else if (d.status.includes('Overdue')) progress = 85;
+  else if (d.status.includes('Urgent')) progress = 70;
+  else if (d.status.includes('On Track')) progress = 40;
+
+  let completedBanner = '';
+  if (d.is_completed) {
+    completedBanner = `<div class="completed-banner">✅ Project Completed Successfully!</div>`;
+  }
+
+  document.getElementById('content').innerHTML = `
+    ${completedBanner}
+    <div class="card">
+      <div class="project-title">📁 ${d.title}</div>
+      <div class="client-name">Client: ${d.client_name}</div>
+
+      <div class="info-row">
+        <span class="info-label">Status</span>
+        <span class="status-badge ${statusClass}">${d.status}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Due Date</span>
+        <span class="info-value">📅 ${d.due_date}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Risk Level</span>
+        <span class="info-value ${riskClass}">⚠️ ${d.risk}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Days Remaining</span>
+        <span class="info-value">${d.is_completed ? '✅ Done' : d.days_left < 0 ? '⛔ ' + Math.abs(d.days_left) + ' days overdue' : '⏳ ' + d.days_left + ' days'}</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Progress</span>
+          <span>${progress}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Powered by Project Manager • This link is private to you</div>
+  `;
+
+  setTimeout(() => {
+    document.getElementById('progressFill').style.width = progress + '%';
+  }, 100);
+}
+
+loadPortal();
+</script>
+</body>
+</html>
