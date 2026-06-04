@@ -149,6 +149,20 @@
     }
     .complete-btn:hover { background: #c8e6c9; }
     .complete-btn:disabled { background: #f5f5f5; color: #bbb; cursor: not-allowed; }
+    .delete-btn {
+      background: #ffebee;
+      color: #e53935;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .delete-btn:hover { background: #ffcdd2; }
 
     .refresh-bar { text-align: center; color: #aaa; font-size: 12px; margin-bottom: 12px; }
 
@@ -328,12 +342,19 @@
               <button class="complete-btn" onclick="completeTask(${task.id})" ${task.is_completed ? "disabled" : ""}>
                 ${task.is_completed ? "✅ Completed" : "Mark as Complete ✓"}
               </button>
+            <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️ Delete Task</button>
             </div>`;
         });
         document.getElementById("tasks").innerHTML = html;
       } catch (err) {
         document.getElementById("tasks").innerHTML = "<p style=\"color:red;text-align:center\">Error loading tasks.</p>";
       }
+    }
+
+    async function deleteTask(id) {
+      if (!confirm("Delete this task?")) return;
+      await fetch("/tasks/" + id, { method: "DELETE" });
+      loadTasks();
     }
 
     async function completeTask(id) {

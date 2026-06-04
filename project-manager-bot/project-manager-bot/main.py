@@ -153,6 +153,19 @@ def live_tasks(token: str = Cookie(None)):
         })
     return result
 
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: int, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    task = db.query(Task).filter(Task.id == task_id, Task.user_id == user.id).first()
+    if task:
+        db.delete(task)
+        db.commit()
+    db.close()
+    return {"message": "Task deleted"}
+
 @app.get("/me")
 def get_me(token: str = Cookie(None)):
     user = get_user_from_token(token)
