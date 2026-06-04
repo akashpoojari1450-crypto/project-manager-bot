@@ -15,7 +15,27 @@ class User(Base):
     username = Column(String, unique=True)
     email = Column(String, unique=True)
     hashed_password = Column(String)
-    tasks = relationship("Task", back_populates="owner")
+    tasks = relationship("Task", back_populates="owner", foreign_keys="Task.user_id")
+    teams_owned = relationship("Team", back_populates="owner")
+    team_memberships = relationship("TeamMember", back_populates="user")
+
+class Team(Base):
+    __tablename__ = "teams"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="teams_owned")
+    members = relationship("TeamMember", back_populates="team")
+    tasks = relationship("Task", back_populates="team")
+
+class TeamMember(Base):
+    __tablename__ = "team_members"
+    id = Column(Integer, primary_key=True)
+    team_id = Column(Integer, ForeignKey("teams.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    role = Column(String, default="member")  # owner or member
+    team = relationship("Team", back_populates="members")
+    user = relationship("User", back_populates="team_memberships")
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -23,12 +43,16 @@ class Task(Base):
     title = Column(String)
     client_name = Column(String)
     client_email = Column(String)
-    client_token = Column(String, unique=True)
+    client_token = Column(String)
     due_date = Column(DateTime)
     is_completed = Column(Boolean, default=False)
     alert_3day_sent = Column(Boolean, default=False)
     alert_1day_sent = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User", back_populates="tasks")
+    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+    owner = relationship("User", back_populates="tasks", foreign_keys=[user_id])
+    assignee = relationship("User", foreign_keys=[assigned_to])
+    team = relationship("Team", back_populates="tasks")
 
 Base.metadata.create_all(engine)

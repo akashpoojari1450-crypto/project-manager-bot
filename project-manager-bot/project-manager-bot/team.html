@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teams - Project Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .navbar { background: linear-gradient(135deg, #1e3c72, #2a69ac); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .navbar h1 { font-size: 18px; font-weight: 700; }
+    .nav-links { display: flex; gap: 12px; align-items: center; }
+    .nav-link { color: white; text-decoration: none; font-size: 13px; opacity: 0.9; padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.2); }
+    .nav-link:hover { background: rgba(255,255,255,0.3); }
+    .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+    .card { background: white; border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .card h2 { font-size: 16px; color: #333; margin-bottom: 14px; }
+    input { width: 100%; padding: 11px 14px; border: 1.5px solid #e0e0e0; border-radius: 9px; font-size: 14px; outline: none; margin-bottom: 10px; }
+    input:focus { border-color: #2196F3; }
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 9px; font-size: 15px; font-weight: 600; cursor: pointer; color: white; }
+    .btn-blue { background: linear-gradient(135deg, #1e3c72, #2a69ac); }
+    .btn-green { background: #43a047; }
+    .btn-small { width: auto; padding: 8px 16px; font-size: 13px; border-radius: 7px; border: none; cursor: pointer; color: white; background: #2196F3; margin-top: 8px; }
+    .msg { font-size: 13px; font-weight: 600; margin-top: 8px; text-align: center; }
+    .success { color: #43a047; }
+    .error { color: #e53935; }
+    .team-card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border-left: 5px solid #1e3c72; }
+    .team-name { font-size: 17px; font-weight: 700; color: #222; }
+    .team-meta { font-size: 13px; color: #888; margin: 4px 0 10px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-owner { background: #e3f2fd; color: #1e3c72; }
+    .badge-member { background: #f3e5f5; color: #7b1fa2; }
+    .member-list { margin-top: 10px; }
+    .member-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .task-item { padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
+    .task-item .task-title { font-weight: 600; margin-bottom: 4px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .tab { padding: 8px 16px; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; background: #f0f2f5; color: #555; }
+    .tab.active { background: #1e3c72; color: white; }
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>👥 Teams</h1>
+    <div class="nav-links">
+      <a href="/" class="nav-link">📋 Dashboard</a>
+      <a href="#" class="nav-link" onclick="logout()">Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- CREATE TEAM -->
+    <div class="card">
+      <h2>➕ Create New Team</h2>
+      <input type="text" id="team-name" placeholder="Team name e.g. Development Team" />
+      <button class="btn btn-blue" onclick="createTeam()">Create Team</button>
+      <p class="msg" id="create-msg"></p>
+    </div>
+
+    <!-- MY TEAMS -->
+    <div class="card">
+      <h2>👥 My Teams</h2>
+      <div id="teams-list">Loading...</div>
+    </div>
+
+    <!-- TEAM DETAIL -->
+    <div id="team-detail" style="display:none">
+      <div class="card">
+        <h2 id="detail-title">Team Details</h2>
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('members-tab', this)">👥 Members</button>
+          <button class="tab" onclick="showTab('tasks-tab', this)">📋 Tasks</button>
+          <button class="tab" onclick="showTab('invite-tab', this)">➕ Invite</button>
+        </div>
+
+        <!-- MEMBERS -->
+        <div id="members-tab" class="section active">
+          <div id="members-list">Loading...</div>
+        </div>
+
+        <!-- TASKS -->
+        <div id="tasks-tab" class="section">
+          <div id="team-tasks-list">Loading...</div>
+        </div>
+
+        <!-- INVITE -->
+        <div id="invite-tab" class="section">
+          <input type="text" id="invite-username" placeholder="Enter username to invite" />
+          <button class="btn btn-green" onclick="inviteMember()">Send Invite</button>
+          <p class="msg" id="invite-msg"></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentTeamId = null;
+
+    async function logout() {
+      await fetch("/logout", { method: "POST" });
+      window.location.href = "/login-page";
+    }
+
+    function showTab(tabId, btn) {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      btn.classList.add("active");
+      if (tabId === "tasks-tab") loadTeamTasks(currentTeamId);
+      if (tabId === "members-tab") loadMembers(currentTeamId);
+    }
+
+    async function createTeam() {
+      const name = document.getElementById("team-name").value.trim();
+      const msg = document.getElementById("create-msg");
+      if (!name) { msg.className = "msg error"; msg.innerText = "Enter team name!"; return; }
+      const res = await fetch("/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        msg.className = "msg success"; msg.innerText = "✅ Team created!";
+        document.getElementById("team-name").value = "";
+        loadTeams();
+      } else {
+        msg.className = "msg error"; msg.innerText = "❌ " + data.error;
+      }
+    }
+
+    async function loadTeams() {
+      const res = await fetch("/teams");
+      if (res.status === 401) { window.location.href = "/login-page"; return; }
+      const teams = await res.json();
+      const container = document.getElementById("teams-list");
+      if (teams.length === 0) {
+        container.innerHTML = "<p style=\"color:#aaa;text-align:center;padding:20px\">No teams yet. Create one above!</p>";
+        return;
+      }
+      container.innerHTML = teams.map(t => `
+        <div class="team-card" onclick="openTeam(${t.id}, '${t.name}')">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="team-name">👥 ${t.name}</div>
+            <span class="badge ${t.role === 'owner' ? 'badge-owner' : 'badge-member'}">${t.role}</span>
+          </div>
+          <div class="team-meta">${t.member_count} member${t.member_count !== 1 ? "s" : ""}</div>
+          <button class="btn-small" onclick="event.stopPropagation(); openTeam(${t.id}, '${t.name}')">View Team →</button>
+        </div>
+      `).join("");
+    }
+
+    async function openTeam(teamId, teamName) {
+      currentTeamId = teamId;
+      document.getElementById("team-detail").style.display = "block";
+      document.getElementById("detail-title").innerText = "👥 " + teamName;
+      document.getElementById("team-detail").scrollIntoView({ behavior: "smooth" });
+      loadMembers(teamId);
+    }
+
+    async function loadMembers(teamId) {
+      const res = await fetch(`/teams/${teamId}/members`);
+      const members = await res.json();
+      document.getElementById("members-list").innerHTML = `
+        <div class="member-list">
+          ${members.map(m => `
+            <div class="member-item">
+              <span>👤 ${m.username} (${m.email})</span>
+              <span class="badge ${m.role === 'owner' ? 'badge-owner' : 'badge-member'}">${m.role}</span>
+            </div>
+          `).join("")}
+        </div>`;
+    }
+
+    async function loadTeamTasks(teamId) {
+      const res = await fetch(`/teams/${teamId}/tasks`);
+      const tasks = await res.json();
+      const container = document.getElementById("team-tasks-list");
+      if (tasks.length === 0) {
+        container.innerHTML = "<p style=\"color:#aaa;text-align:center;padding:20px\">No tasks assigned to this team yet.</p>";
+        return;
+      }
+      container.innerHTML = tasks.map(t => `
+        <div class="task-item">
+          <div class="task-title">📌 ${t.title}</div>
+          <div>👤 Client: ${t.client_name} | 📅 Due: ${t.due_date}</div>
+          <div>👷 Assigned to: <strong>${t.assigned_to}</strong> | ${t.is_completed ? "✅ Done" : "⏳ " + t.days_left + " days left"}</div>
+        </div>
+      `).join("");
+    }
+
+    async function inviteMember() {
+      const username = document.getElementById("invite-username").value.trim();
+      const msg = document.getElementById("invite-msg");
+      if (!username) { msg.className = "msg error"; msg.innerText = "Enter username!"; return; }
+      const res = await fetch(`/teams/${currentTeamId}/invite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        msg.className = "msg success"; msg.innerText = "✅ " + data.message;
+        document.getElementById("invite-username").value = "";
+        loadMembers(currentTeamId);
+      } else {
+        msg.className = "msg error"; msg.innerText = "❌ " + data.error;
+      }
+    }
+
+    loadTeams();
+  </script>
+</body>
+</html>

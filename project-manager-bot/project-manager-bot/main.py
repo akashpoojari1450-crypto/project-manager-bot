@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Cookie, Response, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
-from models import SessionLocal, Task, User
+from models import SessionLocal, Task, User, Team, TeamMember
 from scheduler import start_scheduler
 from pydantic import BaseModel
 from datetime import datetime
@@ -11,6 +12,24 @@ from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 scheduler = start_scheduler()
+import os
+if os.path.exists("icon-192.png"):
+    @app.get("/icon-192.png")
+    def icon192():
+        from fastapi.responses import FileResponse
+        return FileResponse("icon-192.png")
+    @app.get("/icon-512.png")
+    def icon512():
+        from fastapi.responses import FileResponse
+        return FileResponse("icon-512.png")
+    @app.get("/manifest.json")
+    def manifest():
+        from fastapi.responses import FileResponse
+        return FileResponse("manifest.json")
+    @app.get("/sw.js")
+    def sw():
+        from fastapi.responses import FileResponse
+        return FileResponse("sw.js")
 
 class TaskCreate(BaseModel):
     title: str
@@ -346,9 +365,150 @@ def client_portal_data(client_token: str):
         "description": getattr(task, "description", "")
     }
 
+
+# ── TEAM ROUTES ──────────────────────────────────────────
+
+class TeamCreate(BaseModel):
+    name: str
+
+class InviteMember(BaseModel):
+    username: str
+
+class AssignTask(BaseModel):
+    username: str
+
+@app.post("/teams")
+def create_team(data: TeamCreate, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    team = Team(name=data.name, owner_id=user.id)
+    db.add(team)
+    db.commit()
+    db.refresh(team)
+    # Add owner as member
+    member = TeamMember(team_id=team.id, user_id=user.id, role="owner")
+    db.add(member)
+    db.commit()
+    db.close()
+    return {"message": "Team created!", "team_id": team.id}
+
+@app.post("/teams/{team_id}/invite")
+def invite_member(team_id: int, data: InviteMember, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    team = db.query(Team).filter(Team.id == team_id, Team.owner_id == user.id).first()
+    if not team:
+        db.close()
+        return JSONResponse({"error": "Team not found or not your team"}, status_code=404)
+    invite_user = db.query(User).filter(User.username == data.username).first()
+    if not invite_user:
+        db.close()
+        return JSONResponse({"error": "User not found"}, status_code=404)
+    existing = db.query(TeamMember).filter(TeamMember.team_id == team_id, TeamMember.user_id == invite_user.id).first()
+    if existing:
+        db.close()
+        return JSONResponse({"error": "User already in team"}, status_code=400)
+    member = TeamMember(team_id=team_id, user_id=invite_user.id, role="member")
+    db.add(member)
+    db.commit()
+    db.close()
+    return {"message": f"{data.username} added to team!"}
+
+@app.get("/teams")
+def get_teams(token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    memberships = db.query(TeamMember).filter(TeamMember.user_id == user.id).all()
+    teams = []
+    for m in memberships:
+        team = db.query(Team).filter(Team.id == m.team_id).first()
+        members = db.query(TeamMember).filter(TeamMember.team_id == team.id).all()
+        teams.append({
+            "id": team.id,
+            "name": team.name,
+            "role": m.role,
+            "member_count": len(members)
+        })
+    db.close()
+    return teams
+
+@app.get("/teams/{team_id}/tasks")
+def get_team_tasks(team_id: int, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    member = db.query(TeamMember).filter(TeamMember.team_id == team_id, TeamMember.user_id == user.id).first()
+    if not member:
+        db.close()
+        return JSONResponse({"error": "Not a team member"}, status_code=403)
+    tasks = db.query(Task).filter(Task.team_id == team_id).all()
+    from datetime import timedelta
+    IST_OFFSET = timedelta(hours=5, minutes=30)
+    now = datetime.utcnow() + IST_OFFSET
+    result = []
+    for task in tasks:
+        due_ist = task.due_date + IST_OFFSET
+        days_left = (due_ist - now).days
+        assignee = db.query(User).filter(User.id == task.assigned_to).first()
+        result.append({
+            "id": task.id,
+            "title": task.title,
+            "client_name": task.client_name,
+            "due_date": task.due_date.strftime("%Y-%m-%d"),
+            "days_left": days_left,
+            "is_completed": task.is_completed,
+            "assigned_to": assignee.username if assignee else "Unassigned"
+        })
+    db.close()
+    return result
+
+@app.post("/tasks/{task_id}/assign")
+def assign_task(task_id: int, data: AssignTask, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    task = db.query(Task).filter(Task.id == task_id, Task.user_id == user.id).first()
+    if not task:
+        db.close()
+        return JSONResponse({"error": "Task not found"}, status_code=404)
+    assignee = db.query(User).filter(User.username == data.username).first()
+    if not assignee:
+        db.close()
+        return JSONResponse({"error": "User not found"}, status_code=404)
+    task.assigned_to = assignee.id
+    db.commit()
+    db.close()
+    return {"message": f"Task assigned to {data.username}!"}
+
+@app.get("/teams/{team_id}/members")
+def get_team_members(team_id: int, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    members = db.query(TeamMember).filter(TeamMember.team_id == team_id).all()
+    result = []
+    for m in members:
+        u = db.query(User).filter(User.id == m.user_id).first()
+        result.append({"username": u.username, "email": u.email, "role": m.role})
+    db.close()
+    return result
+
 @app.get("/")
 def dashboard():
     return FileResponse("dashboard.html")
+
+@app.get("/teams-page")
+def teams_page():
+    return FileResponse("team.html")
 
 @app.get("/login-page")
 def login_page():
