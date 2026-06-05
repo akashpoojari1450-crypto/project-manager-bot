@@ -57,3 +57,16 @@ def chat_with_tasks(tasks, username, user_message):
         max_tokens=300
     )
     return response.choices[0].message.content
+
+def generate_horoscope(tasks, username):
+    context = get_task_context(tasks)
+    now_ist = (datetime.utcnow() + IST).strftime("%d %b %Y")
+    response = get_client().chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {"role": "system", "content": "You are a mystical AI project horoscope reader. Mix astrology drama with real project management insights. Be funny, dramatic, and accurate."},
+            {"role": "user", "content": f"Generate a weekly project horoscope for {username} on {now_ist}.\n\nTheir tasks:\n{context}\n\nInclude:\n1. Weekly prediction (dramatic astrology style)\n2. Lucky day this week\n3. Danger zone (day/situation to avoid)\n4. Power move (one bold action to take)\n5. Project star sign based on their work style\nUse emojis, be mystical but funny. Under 250 words."}
+        ],
+        max_tokens=500
+    )
+    return response.choices[0].message.content
