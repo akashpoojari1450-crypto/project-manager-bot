@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from risk_engine import analyze_risk
 from auth import register_user, login_user, get_user_from_token
+from ai_brain import generate_daily_briefing, suggest_reschedule, chat_with_tasks
 from pdf_report import generate_pdf, generate_completion_report
 from fastapi.responses import StreamingResponse
 
@@ -501,6 +502,22 @@ def get_team_members(team_id: int, token: str = Cookie(None)):
         result.append({"username": u.username, "email": u.email, "role": m.role})
     db.close()
     return result
+
+
+@app.get("/briefing")
+def daily_briefing(token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    tasks = db.query(Task).filter(Task.user_id == user.id).all()
+    db.close()
+    try:
+        from ai_brain import generate_daily_briefing
+        briefing = generate_daily_briefing(tasks, user.username)
+        return {"briefing": briefing}
+    except Exception as e:
+        return {"briefing": f"Error: {str(e)}"}
 
 @app.get("/")
 def dashboard():

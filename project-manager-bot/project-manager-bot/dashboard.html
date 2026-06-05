@@ -244,9 +244,10 @@
     <h1>📋 Project Manager</h1>
     <div class="navbar-right">
       <span class="username" id="username-display"></span>
+      <button class="logout-btn" onclick="getDailyBriefing()" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);margin-right:8px">🧠 Briefing</button>
       <button class="logout-btn" onclick="toggleDark()" id="darkBtn" style="margin-right:8px">🌙 Dark</button>
       <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:20px;font-size:13px;">👥 Teams</a>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+      <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 10px;border-radius:20px;font-size:12px;white-space:nowrap;">👥 Teams</a><button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
 
@@ -534,6 +535,25 @@ async function sharePortal(taskId) {
   }
 }
 
+
+async function getDailyBriefing() {
+    document.getElementById('briefingModal').style.display = 'flex';
+    document.getElementById('briefingContent').textContent = '⏳ Generating your briefing...';
+    const res = await fetch('/briefing');
+    const data = await res.json();
+    document.getElementById('briefingContent').textContent = data.briefing || 'Failed to generate briefing.';
+}
+
+async function rescheduleTask(taskId) {
+    const btn = event.target;
+    btn.textContent = '⏳ Thinking...';
+    btn.disabled = true;
+    const res = await fetch(`/tasks/${taskId}/reschedule`);
+    const data = await res.json();
+    btn.textContent = '🔄 AI Reschedule';
+    btn.disabled = false;
+    alert('💡 AI Suggestion:\n\n' + data.suggestion);
+}
 </script>
 
   <!-- Chatbot -->
@@ -546,6 +566,14 @@ async function sharePortal(taskId) {
     <div class="chat-input-row">
       <input class="chat-input" id="chatInput" placeholder="Ask about your tasks..." onkeydown="if(event.key==='Enter') sendChat()">
       <button class="chat-send" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <div id="briefingModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center">
+    <div style="background:white;border-radius:16px;padding:28px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;position:relative">
+      <button onclick="document.getElementById('briefingModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+      <h2 style="color:#1e3c72;margin-bottom:16px">🧠 AI Daily Briefing</h2>
+      <div id="briefingContent" style="line-height:1.7;white-space:pre-wrap;font-size:14px;color:#333">Loading...</div>
     </div>
   </div>
 </body>
