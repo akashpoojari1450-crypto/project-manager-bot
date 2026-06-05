@@ -530,3 +530,18 @@ def teams_page():
 @app.get("/login-page")
 def login_page():
     return FileResponse("login.html")
+
+@app.get("/horoscope")
+def project_horoscope(token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    tasks = db.query(Task).filter(Task.user_id == user.id).all()
+    db.close()
+    try:
+        from ai_brain import generate_horoscope
+        horoscope = generate_horoscope(tasks, user.username)
+        return {"horoscope": horoscope}
+    except Exception as e:
+        return {"horoscope": f"Error: {str(e)}"}
