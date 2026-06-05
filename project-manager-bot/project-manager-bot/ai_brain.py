@@ -1,11 +1,11 @@
 from groq import Groq
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 IST = timedelta(hours=5, minutes=30)
+
+def get_client():
+    return Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def get_task_context(tasks):
     now = datetime.utcnow()
@@ -23,22 +23,11 @@ def get_task_context(tasks):
 def generate_daily_briefing(tasks, username):
     context = get_task_context(tasks)
     now_ist = (datetime.utcnow() + IST).strftime("%d %b %Y")
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
-            {"role": "system", "content": "You are a professional project manager assistant. Generate concise daily briefings."},
-            {"role": "user", "content": f"""Generate a daily briefing for {username} on {now_ist}.
-
-Tasks:
-{context}
-
-Include:
-1. 📊 Quick summary (totals)
-2. 🔴 Critical items needing immediate attention
-3. 📋 Top 3 priorities for today
-4. 💡 One productivity tip
-
-Keep it under 200 words. Use emojis. Be motivating."""}
+            {"role": "system", "content": "You are a professional project manager assistant."},
+            {"role": "user", "content": f"Daily briefing for {username} on {now_ist}.\n\nTasks:\n{context}\n\nInclude: summary, critical items, top 3 priorities, one tip. Under 200 words, use emojis."}
         ],
         max_tokens=400
     )
@@ -47,11 +36,11 @@ Keep it under 200 words. Use emojis. Be motivating."""}
 def suggest_reschedule(task):
     now = datetime.utcnow()
     days_left = (task.due_date - now).days
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
             {"role": "system", "content": "You are a project manager. Suggest realistic new deadlines concisely."},
-            {"role": "user", "content": f"Task '{task.title}' for client {task.client_name} is {'overdue by ' + str(abs(days_left)) + ' days' if days_left < 0 else 'due in ' + str(days_left) + ' days'}. Suggest a new deadline and reason in 1-2 sentences."}
+            {"role": "user", "content": f"Task '{task.title}' for {task.client_name} is {'overdue by ' + str(abs(days_left)) + ' days' if days_left < 0 else 'due in ' + str(days_left) + ' days'}. Suggest a new deadline in 1-2 sentences."}
         ],
         max_tokens=100
     )
@@ -59,7 +48,7 @@ def suggest_reschedule(task):
 
 def chat_with_tasks(tasks, username, user_message):
     context = get_task_context(tasks)
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
             {"role": "system", "content": f"You are a helpful project manager assistant for {username}.\n\nTheir tasks:\n{context}\n\nBe concise and use emojis."},
