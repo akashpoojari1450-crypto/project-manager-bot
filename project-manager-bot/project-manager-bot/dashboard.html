@@ -246,7 +246,6 @@
       <span class="username" id="username-display"></span>
       <button class="logout-btn" onclick="getDailyBriefing()" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);margin-right:8px">🧠 Briefing</button>
       <button class="logout-btn" onclick="getHoroscope()" style="background:linear-gradient(135deg,#4a148c,#aa00ff);margin-right:8px">🔮 Horoscope</button>
-      <button class="logout-btn" onclick="getHoroscope()" style="background:linear-gradient(135deg,#4a148c,#aa00ff);margin-right:8px">🔮 Horoscope</button>
       <button class="logout-btn" onclick="toggleDark()" id="darkBtn" style="margin-right:8px">🌙 Dark</button>
       <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:20px;font-size:13px;">👥 Teams</a>
       <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 10px;border-radius:20px;font-size:12px;white-space:nowrap;">👥 Teams</a><button class="logout-btn" onclick="logout()">Logout</button>
@@ -537,14 +536,6 @@ async function sharePortal(taskId) {
   }
 }
 
-
-async function getHoroscope() {
-    document.getElementById('horoscopeModal').style.display = 'flex';
-    document.getElementById('horoscopeContent').textContent = '🔮 Reading the stars for your projects...';
-    const res = await fetch('/horoscope');
-    const data = await res.json();
-    document.getElementById('horoscopeContent').textContent = data.horoscope || 'The stars are unclear tonight.';
-}
 
 async function getHoroscope() {
     document.getElementById('horoscopeModal').style.display = 'flex';
