@@ -245,6 +245,7 @@
     <div class="navbar-right">
       <span class="username" id="username-display"></span>
       <button class="logout-btn" onclick="getDailyBriefing()" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);margin-right:8px">🧠 Briefing</button>
+      <button class="logout-btn" onclick="getHoroscope()" style="background:linear-gradient(135deg,#4a148c,#aa00ff);margin-right:8px">🔮 Horoscope</button>
       <button class="logout-btn" onclick="toggleDark()" id="darkBtn" style="margin-right:8px">🌙 Dark</button>
       <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:20px;font-size:13px;">👥 Teams</a>
       <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 10px;border-radius:20px;font-size:12px;white-space:nowrap;">👥 Teams</a><button class="logout-btn" onclick="logout()">Logout</button>
@@ -536,6 +537,14 @@ async function sharePortal(taskId) {
 }
 
 
+async function getHoroscope() {
+    document.getElementById('horoscopeModal').style.display = 'flex';
+    document.getElementById('horoscopeContent').textContent = '🔮 Reading the stars for your projects...';
+    const res = await fetch('/horoscope');
+    const data = await res.json();
+    document.getElementById('horoscopeContent').textContent = data.horoscope || 'The stars are unclear tonight.';
+}
+
 async function getDailyBriefing() {
     document.getElementById('briefingModal').style.display = 'flex';
     document.getElementById('briefingContent').textContent = '⏳ Generating your briefing...';
@@ -566,6 +575,14 @@ async function rescheduleTask(taskId) {
     <div class="chat-input-row">
       <input class="chat-input" id="chatInput" placeholder="Ask about your tasks..." onkeydown="if(event.key==='Enter') sendChat()">
       <button class="chat-send" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <div id="horoscopeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center">
+    <div style="background:linear-gradient(135deg,#0d0d2b,#1a0533);color:#e0c8ff;padding:32px;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow-y:auto;position:relative;border:1px solid #aa00ff;box-shadow:0 0 40px #aa00ff55">
+      <button onclick="document.getElementById('horoscopeModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#e0c8ff">✕</button>
+      <h2 style="color:#ce93d8;margin-bottom:16px;text-align:center">🔮 Project Horoscope</h2>
+      <div id="horoscopeContent" style="line-height:1.8;white-space:pre-wrap;font-size:14px;color:#e0c8ff">Loading...</div>
     </div>
   </div>
 
