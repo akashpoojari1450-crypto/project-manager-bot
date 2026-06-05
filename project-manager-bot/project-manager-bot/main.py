@@ -530,3 +530,9 @@ def teams_page():
 @app.get("/login-page")
 def login_page():
     return FileResponse("login.html")
+
+@app.get("/debug-env")
+def debug_env():
+    import os
+    key = os.environ.get("GROQ_API_KEY")
+    return {"key_set": key is not None, "key_preview": key[:8] if key else "MISSING"}
