@@ -51,7 +51,6 @@ def register(data: AuthRequest):
     from notifier import send_email
     send_email(
         data.email,
-        "Welcome to Project Manage AI! 🚀",
     )
     return {"message": "Account created! Please login."}
 
