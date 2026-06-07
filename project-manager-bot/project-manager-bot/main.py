@@ -545,3 +545,9 @@ def project_horoscope(token: str = Cookie(None)):
         return {"horoscope": horoscope}
     except Exception as e:
         return {"horoscope": f"Error: {str(e)}"}
+
+@app.get("/test-email")
+def test_email():
+    from notifier import send_email
+    result = send_email("scholarship1540@gmail.com", "Test Email", "Railway email test working!")
+    return {"result": str(result)}
