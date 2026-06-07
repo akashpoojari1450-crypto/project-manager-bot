@@ -48,12 +48,15 @@ def register(data: AuthRequest):
     user = register_user(data.username, data.email, data.password)
     if not user:
         return JSONResponse({"error": "Username already exists"}, status_code=400)
-    from notifier import send_email
-    send_email(
-        data.email,
-        "Welcome to Project Manage AI",
-        "Hi " + data.username + ",\n\nWelcome to Project Manage AI\n\nYour account has been created.\n\nLogin: https://project-manager-bot-production.up.railway.app\n\nTeam Code Raiders"
-    )
+    try:
+        from notifier import send_email
+        send_email(
+            data.email,
+            "Welcome to Project Manage AI",
+            "Hi " + data.username + ",\n\nWelcome to Project Manage AI\n\nYour account has been created.\n\nLogin: https://project-manager-bot-production.up.railway.app\n\nTeam Code Raiders"
+        )
+    except Exception as e:
+        print(f"Welcome email failed: {e}")
     return {"message": "Account created! Please login."}
 
 @app.post("/login")
