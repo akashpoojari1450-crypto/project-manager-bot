@@ -51,6 +51,8 @@ def register(data: AuthRequest):
     from notifier import send_email
     send_email(
         data.email,
+        "Welcome to Project Manage AI",
+        "Hi " + data.username + ",\n\nWelcome to Project Manage AI\n\nYour account has been created.\n\nLogin: https://project-manager-bot-production.up.railway.app\n\nTeam Code Raiders"
     )
     return {"message": "Account created! Please login."}
 
