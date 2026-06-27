@@ -56,3 +56,11 @@ class Task(Base):
     team = relationship("Team", back_populates="tasks")
 
 Base.metadata.create_all(engine)
+
+class Comment(Base):
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    content = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)

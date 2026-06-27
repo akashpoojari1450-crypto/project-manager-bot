@@ -617,3 +617,94 @@ def test_email():
     from notifier import send_email
     result = send_email("scholarship1540@gmail.com", "Test Email", "Railway email test working!")
     return {"result": str(result)}
+
+# ─── COMMENTS ROUTES ───────────────────────────────────────────
+class CommentCreate(BaseModel):
+    content: str
+
+@app.post("/tasks/{task_id}/comments")
+def add_comment(task_id: int, comment: CommentCreate, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    from models import Comment
+    new_comment = Comment(task_id=task_id, user_id=user.id, content=comment.content)
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+    db.close()
+    return {"message": "Comment added", "id": new_comment.id, "content": new_comment.content, "created_at": str(new_comment.created_at)}
+
+@app.get("/tasks/{task_id}/comments")
+def get_comments(task_id: int, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    from models import Comment
+    comments = db.query(Comment).filter(Comment.task_id == task_id).order_by(Comment.created_at.desc()).all()
+    result = [{"id": c.id, "content": c.content, "created_at": str(c.created_at)} for c in comments]
+    db.close()
+    return result
+
+@app.delete("/tasks/{task_id}/comments/{comment_id}")
+def delete_comment(task_id: int, comment_id: int, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    from models import Comment
+    comment = db.query(Comment).filter(Comment.id == comment_id, Comment.user_id == user.id).first()
+    if comment:
+        db.delete(comment)
+        db.commit()
+    db.close()
+    return {"message": "Deleted"}
+
+# ─── ADVANCED ANALYTICS ────────────────────────────────────────
+@app.get("/analytics/advanced")
+def advanced_analytics_data(token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    tasks = db.query(Task).filter(Task.user_id == user.id).all()
+    db.close()
+    now = datetime.utcnow()
+    from datetime import timedelta
+
+    weekly = []
+    for i in range(6, -1, -1):
+        day = now - timedelta(days=i)
+        day_str = day.strftime("%a")
+        completed = sum(1 for t in tasks if t.is_completed and t.due_date and
+                       (day - timedelta(days=1)) <= t.due_date <= (day + timedelta(days=1)))
+        weekly.append({"day": day_str, "completed": completed})
+
+    client_stats = {}
+    for t in tasks:
+        c = t.client_name or "Unknown"
+        if c not in client_stats:
+            client_stats[c] = {"total": 0, "completed": 0, "overdue": 0}
+        client_stats[c]["total"] += 1
+        if t.is_completed:
+            client_stats[c]["completed"] += 1
+        elif t.due_date and t.due_date < now:
+            client_stats[c]["overdue"] += 1
+
+    total = len(tasks)
+    completed = sum(1 for t in tasks if t.is_completed)
+    overdue = sum(1 for t in tasks if not t.is_completed and t.due_date and t.due_date < now)
+    urgent = sum(1 for t in tasks if not t.is_completed and t.due_date and 0 <= (t.due_date - now).days <= 3)
+
+    return {
+        "weekly": weekly,
+        "client_stats": client_stats,
+        "total": total,
+        "completed": completed,
+        "overdue": overdue,
+        "urgent": urgent,
+        "completion_rate": round((completed / total * 100) if total else 0, 1),
+        "on_track": total - completed - overdue - urgent
+    }

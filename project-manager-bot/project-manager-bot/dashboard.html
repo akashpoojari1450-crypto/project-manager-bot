@@ -563,6 +563,43 @@ async function rescheduleTask(taskId) {
     btn.disabled = false;
     alert('💡 AI Suggestion:\n\n' + data.suggestion);
 }
+
+let currentTaskId = null;
+
+async function openComments(taskId) {
+    currentTaskId = taskId;
+    document.getElementById('commentsModal').style.display = 'flex';
+    await loadComments(taskId);
+}
+
+async function loadComments(taskId) {
+    const res = await fetch(`/tasks/${taskId}/comments`);
+    const comments = await res.json();
+    const list = document.getElementById('commentsList');
+    if (comments.length === 0) {
+        list.innerHTML = '<p style="color:#999;text-align:center;font-size:13px">No comments yet. Add one below!</p>';
+        return;
+    }
+    list.innerHTML = comments.map(c => `
+        <div style="background:#f8f9ff;border-radius:8px;padding:10px;margin-bottom:8px;font-size:13px">
+            <p style="color:#333;margin:0">${c.content}</p>
+            <p style="color:#999;font-size:11px;margin:4px 0 0">${new Date(c.created_at).toLocaleString()}</p>
+        </div>
+    `).join('');
+}
+
+async function submitComment() {
+    const input = document.getElementById('commentInput');
+    const content = input.value.trim();
+    if (!content || !currentTaskId) return;
+    await fetch(`/tasks/${currentTaskId}/comments`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({content})
+    });
+    input.value = '';
+    await loadComments(currentTaskId);
+}
 </script>
 
   <!-- Chatbot -->
@@ -601,5 +638,18 @@ async function rescheduleTask(taskId) {
       <div id="briefingContent" style="line-height:1.7;white-space:pre-wrap;font-size:14px;color:#333">Loading...</div>
     </div>
   </div>
+
+<!-- Comments Modal -->
+<div id="commentsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:16px;padding:28px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;position:relative">
+    <button onclick="document.getElementById('commentsModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+    <h2 style="color:#1e3c72;margin-bottom:16px">📝 Task Notes & Comments</h2>
+    <div id="commentsList" style="margin-bottom:16px;max-height:300px;overflow-y:auto"></div>
+    <div style="display:flex;gap:8px">
+      <input id="commentInput" placeholder="Add a note or comment..." style="flex:1;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:13px;outline:none">
+      <button onclick="submitComment()" style="background:#1e3c72;color:white;border:none;border-radius:8px;padding:10px 16px;cursor:pointer;font-size:13px">Add</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

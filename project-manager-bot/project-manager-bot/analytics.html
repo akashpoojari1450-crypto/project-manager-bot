@@ -4,7 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analytics | Project Manager</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+async function loadAdvanced() {
+    try {
+        const res = await fetch('/analytics/advanced');
+        const d = await res.json();
+
+        new Chart(document.getElementById('weeklyChart'), {
+            type: 'line',
+            data: {
+                labels: d.weekly.map(w => w.day),
+                datasets: [{
+                    label: 'Completed',
+                    data: d.weekly.map(w => w.completed),
+                    borderColor: '#43a047',
+                    backgroundColor: 'rgba(67,160,71,0.1)',
+                    tension: 0.4, fill: true
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+
+        const clients = Object.keys(d.client_stats);
+        new Chart(document.getElementById('clientChart'), {
+            type: 'bar',
+            data: {
+                labels: clients.length ? clients : ['No clients yet'],
+                datasets: [
+                    { label: 'Total', data: clients.map(c => d.client_stats[c].total), backgroundColor: '#1e88e5', borderRadius: 6 },
+                    { label: 'Completed', data: clients.map(c => d.client_stats[c].completed), backgroundColor: '#43a047', borderRadius: 6 },
+                    { label: 'Overdue', data: clients.map(c => d.client_stats[c].overdue), backgroundColor: '#e53935', borderRadius: 6 }
+                ]
+            },
+            options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+    } catch(e) { console.error('Advanced analytics error:', e); }
+}
+loadAdvanced();
+</script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
@@ -54,6 +91,17 @@
       <canvas id="riskChart"></canvas>
     </div>
   </div>
+
+    <div class="charts-grid" style="margin-top:24px">
+      <div class="chart-card">
+        <h3>📅 Weekly Completion Trend</h3>
+        <canvas id="weeklyChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>👥 Client Breakdown</h3>
+        <canvas id="clientChart"></canvas>
+      </div>
+    </div>
 </div>
 <script>
 async function loadAnalytics() {
@@ -88,6 +136,43 @@ async function loadAnalytics() {
   });
 }
 loadAnalytics();
+
+async function loadAdvanced() {
+    try {
+        const res = await fetch('/analytics/advanced');
+        const d = await res.json();
+
+        new Chart(document.getElementById('weeklyChart'), {
+            type: 'line',
+            data: {
+                labels: d.weekly.map(w => w.day),
+                datasets: [{
+                    label: 'Completed',
+                    data: d.weekly.map(w => w.completed),
+                    borderColor: '#43a047',
+                    backgroundColor: 'rgba(67,160,71,0.1)',
+                    tension: 0.4, fill: true
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+
+        const clients = Object.keys(d.client_stats);
+        new Chart(document.getElementById('clientChart'), {
+            type: 'bar',
+            data: {
+                labels: clients.length ? clients : ['No clients yet'],
+                datasets: [
+                    { label: 'Total', data: clients.map(c => d.client_stats[c].total), backgroundColor: '#1e88e5', borderRadius: 6 },
+                    { label: 'Completed', data: clients.map(c => d.client_stats[c].completed), backgroundColor: '#43a047', borderRadius: 6 },
+                    { label: 'Overdue', data: clients.map(c => d.client_stats[c].overdue), backgroundColor: '#e53935', borderRadius: 6 }
+                ]
+            },
+            options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+    } catch(e) { console.error('Advanced analytics error:', e); }
+}
+loadAdvanced();
 </script>
 </body>
 </html>
