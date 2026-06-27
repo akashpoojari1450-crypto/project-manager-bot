@@ -3,7 +3,7 @@
 <head>
   <title>Project Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#4F46E5">
+  <meta name="theme-color" content="#1D4ED8">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ProjManager">
@@ -13,9 +13,9 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     :root {
-      --primary: #4F46E5;
-      --primary-dark: #3730A3;
-      --primary-light: #EEF2FF;
+      --primary: #1D4ED8;
+      --primary-dark: #1E40AF;
+      --primary-light: #EFF6FF;
       --success: #10B981;
       --success-light: #D1FAE5;
       --warning: #F59E0B;
@@ -43,7 +43,7 @@
 
     /* ── NAVBAR ── */
     .navbar {
-      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+      background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
       color: white;
       padding: 0 24px;
       height: 64px;
@@ -53,7 +53,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 4px 20px rgba(79,70,229,0.4);
+      box-shadow: 0 4px 20px rgba(29,78,216,0.4);
     }
     .navbar h1 {
       font-size: 18px;
@@ -161,12 +161,12 @@
     .form-grid input:focus, .form-full input:focus {
       border-color: var(--primary);
       background: white;
-      box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+      box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
     }
     .form-full { margin-bottom: 12px; }
     .add-btn {
       width: 100%;
-      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      background: linear-gradient(135deg, #1D4ED8, #2563EB);
       color: white;
       border: none;
       padding: 14px;
@@ -176,9 +176,9 @@
       cursor: pointer;
       transition: all 0.2s;
       letter-spacing: 0.3px;
-      box-shadow: 0 4px 15px rgba(79,70,229,0.4);
+      box-shadow: 0 4px 15px rgba(29,78,216,0.4);
     }
-    .add-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.5); }
+    .add-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,78,216,0.5); }
     .add-btn:active { transform: translateY(0); }
     .success-msg { color: var(--success); font-size: 13px; display: none; margin-top: 10px; text-align: center; font-weight: 600; padding: 10px; background: var(--success-light); border-radius: 8px; }
     .error-msg { color: var(--danger); font-size: 13px; display: none; margin-top: 10px; text-align: center; font-weight: 600; padding: 10px; background: var(--danger-light); border-radius: 8px; }
@@ -287,7 +287,7 @@
       background: var(--gray-light);
       transition: all 0.2s;
     }
-    .search-bar input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    .search-bar input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(29,78,216,0.1); }
     .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
     .filter-btn {
       padding: 7px 16px;
@@ -323,17 +323,17 @@
     body.dark .task-card.overdue { background: linear-gradient(to right, #2D1B1B, #1E293B); }
     body.dark .task-card.urgent { background: linear-gradient(to right, #2D2110, #1E293B); }
     body.dark .task-card.ontrack { background: linear-gradient(to right, #0F2D22, #1E293B); }
-    body.dark .navbar { background: linear-gradient(135deg, #312E81, #4C1D95); }
+    body.dark .navbar { background: linear-gradient(135deg, #1E3A8A, #1E40AF); }
     body.dark .form-card { background: #1E293B; border-color: #334155; }
     body.dark .search-bar { background: #1E293B; border-color: #334155; }
     body.dark .stat-card { background: #1E293B; border-color: #334155; }
     body.dark input { background: #0F172A; color: #F1F5F9; border-color: #334155; }
-    body.dark .add-btn { background: linear-gradient(135deg, #4F46E5, #7C3AED); }
+    body.dark .add-btn { background: linear-gradient(135deg, #1D4ED8, #2563EB); }
     body.dark .complete-btn { background: #064E3B; color: #6EE7B7; }
     body.dark .complete-btn:disabled { background: #1E293B; color: #475569; }
     body.dark .delete-btn { background: #450A0A; color: #FCA5A5; }
     body.dark .filter-btn { background: #0F172A; color: #94A3B8; border-color: #334155; }
-    body.dark .filter-btn.active { background: #4F46E5; color: white; border-color: #4F46E5; }
+    body.dark .filter-btn.active { background: #1D4ED8; color: white; border-color: #1D4ED8; }
     body.dark .section-title { color: #F1F5F9; }
     body.dark .task-title { color: #F1F5F9; }
 
@@ -478,7 +478,7 @@
               <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️ Delete</button>
             </div>
             <div class="task-actions-row">
-              <button onclick="openComments(${task.id})" style="background:#EEF2FF;color:#4F46E5;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s">📝 Notes</button>
+              <button onclick="openComments(${task.id})" style="background:#EFF6FF;color:#1D4ED8;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s">📝 Notes</button>
               <button onclick="sharePortal(${task.id})" style="background:#F0FDF4;color:#059669;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s">🔗 Share</button>
               ${!task.is_completed ? `<button onclick="rescheduleTask(${task.id})" style="background:#FFF7ED;color:#D97706;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s">🔄 Reschedule</button>` : ""}
             </div>

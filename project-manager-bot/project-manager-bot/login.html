@@ -19,7 +19,7 @@ body {
 /* ── LEFT PANEL ── */
 .left-panel {
   flex: 1;
-  background: linear-gradient(145deg, #1a0533 0%, #0d1b4b 40%, #0a0a1a 100%);
+  background: linear-gradient(145deg, #020617 0%, #0c1a40 40%, #0a0a1a 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -35,7 +35,7 @@ body {
   filter: blur(80px);
   animation: floatOrb 8s ease-in-out infinite;
 }
-.orb-1 { width: 400px; height: 400px; background: rgba(124,58,237,0.35); top: -100px; left: -100px; animation-delay: 0s; }
+.orb-1 { width: 400px; height: 400px; background: rgba(37,99,235,0.35); top: -100px; left: -100px; animation-delay: 0s; }
 .orb-2 { width: 300px; height: 300px; background: rgba(59,130,246,0.25); bottom: 100px; right: -50px; animation-delay: -3s; }
 .orb-3 { width: 200px; height: 200px; background: rgba(16,185,129,0.2); top: 50%; left: 60%; animation-delay: -5s; }
 
@@ -61,9 +61,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(124,58,237,0.2);
-  border: 1px solid rgba(124,58,237,0.4);
-  color: #A78BFA;
+  background: rgba(37,99,235,0.2);
+  border: 1px solid rgba(37,99,235,0.4);
+  color: #60A5FA;
   padding: 8px 16px;
   border-radius: 100px;
   font-size: 12px;
@@ -72,7 +72,7 @@ body {
   text-transform: uppercase;
   margin-bottom: 32px;
 }
-.badge-dot { width: 6px; height: 6px; background: #A78BFA; border-radius: 50%; animation: pulse 2s infinite; }
+.badge-dot { width: 6px; height: 6px; background: #60A5FA; border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
 
 .left-title {
@@ -84,7 +84,7 @@ body {
   color: white;
 }
 .left-title .gradient-text {
-  background: linear-gradient(135deg, #A78BFA, #60A5FA, #34D399);
+  background: linear-gradient(135deg, #60A5FA, #60A5FA, #34D399);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -121,7 +121,7 @@ body {
   font-size: 20px;
   flex-shrink: 0;
 }
-.icon-purple { background: rgba(124,58,237,0.25); }
+.icon-purple { background: rgba(37,99,235,0.25); }
 .icon-blue { background: rgba(59,130,246,0.25); }
 .icon-green { background: rgba(16,185,129,0.25); }
 .icon-orange { background: rgba(245,158,11,0.25); }
@@ -149,11 +149,11 @@ body {
 }
 .form-logo-icon {
   width: 48px; height: 48px;
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  background: linear-gradient(135deg, #1D4ED8, #2563EB);
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   font-size: 22px;
-  box-shadow: 0 8px 20px rgba(79,70,229,0.35);
+  box-shadow: 0 8px 20px rgba(29,78,216,0.35);
 }
 .form-logo-text h2 { font-size: 18px; font-weight: 800; color: #111827; }
 .form-logo-text p { font-size: 12px; color: #9CA3AF; margin-top: 1px; }
@@ -184,7 +184,7 @@ body {
 }
 .tab-btn.active {
   background: white;
-  color: #4F46E5;
+  color: #1D4ED8;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
@@ -218,14 +218,14 @@ body {
   color: #111827;
 }
 .form-group input:focus {
-  border-color: #4F46E5;
+  border-color: #1D4ED8;
   background: white;
-  box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
+  box-shadow: 0 0 0 4px rgba(29,78,216,0.08);
 }
 
 .submit-btn {
   width: 100%;
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
   color: white;
   border: none;
   padding: 15px;
@@ -235,7 +235,7 @@ body {
   cursor: pointer;
   font-family: inherit;
   transition: all 0.25s;
-  box-shadow: 0 4px 15px rgba(79,70,229,0.4);
+  box-shadow: 0 4px 15px rgba(29,78,216,0.4);
   margin-top: 8px;
   display: flex;
   align-items: center;
@@ -243,7 +243,7 @@ body {
   gap: 8px;
   letter-spacing: 0.3px;
 }
-.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79,70,229,0.5); }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(29,78,216,0.5); }
 .submit-btn:active { transform: translateY(0); }
 
 .msg {
@@ -277,7 +277,7 @@ body {
   border-top: 1px solid #F3F4F6;
 }
 .stat { text-align: center; }
-.stat-num { font-size: 20px; font-weight: 800; color: #4F46E5; }
+.stat-num { font-size: 20px; font-weight: 800; color: #1D4ED8; }
 .stat-lbl { font-size: 11px; color: #9CA3AF; font-weight: 500; margin-top: 2px; }
 
 /* Mobile responsive */
