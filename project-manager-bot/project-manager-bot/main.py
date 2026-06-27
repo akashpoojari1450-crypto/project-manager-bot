@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Cookie, Response, Request
+from fastapi import FastAPI, Cookie, Response, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from models import SessionLocal, Task, User, Team, TeamMember
@@ -584,6 +584,131 @@ def daily_briefing(token: str = Cookie(None)):
         return {"briefing": briefing}
     except Exception as e:
         return {"briefing": f"Error: {str(e)}"}
+
+
+# ── Team Chat ─────────────────────────────────────────────────────────────────
+from models import ChatMessage
+from datetime import timezone
+
+class ConnectionManager:
+    def __init__(self):
+        self.active: dict = {}  # room -> list of (websocket, username)
+
+    async def connect(self, websocket: WebSocket, room: str, username: str):
+        await websocket.accept()
+        if room not in self.active:
+            self.active[room] = []
+        self.active[room].append((websocket, username))
+
+    def disconnect(self, websocket: WebSocket, room: str):
+        if room in self.active:
+            self.active[room] = [(ws, u) for ws, u in self.active[room] if ws != websocket]
+
+    async def broadcast(self, room: str, message: dict):
+        import json
+        if room in self.active:
+            dead = []
+            for ws, u in self.active[room]:
+                try:
+                    await ws.send_text(json.dumps(message))
+                except:
+                    dead.append((ws, u))
+            for d in dead:
+                self.active[room].remove(d)
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/chat/{room}")
+async def websocket_chat(websocket: WebSocket, room: str):
+    token = websocket.cookies.get("token")
+    user = get_user_from_token(token)
+    if not user:
+        await websocket.close(code=1008)
+        return
+
+    await manager.connect(websocket, room, user.username)
+
+    # Send last 30 messages on join
+    db = SessionLocal()
+    history = db.query(ChatMessage).filter(
+        ChatMessage.room == room
+    ).order_by(ChatMessage.timestamp.desc()).limit(30).all()
+    db.close()
+
+    import json
+    from datetime import timedelta
+    IST = timedelta(hours=5, minutes=30)
+    for msg in reversed(history):
+        await websocket.send_text(json.dumps({
+            "type": "history",
+            "username": msg.username,
+            "message": msg.message,
+            "timestamp": (msg.timestamp + IST).strftime("%H:%M")
+        }))
+
+    # Notify others user joined
+    await manager.broadcast(room, {
+        "type": "system",
+        "message": f"{user.username} joined the chat"
+    })
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            msg_data = json.loads(data)
+            message = msg_data.get("message", "").strip()
+            if not message:
+                continue
+
+            # Save to DB
+            db = SessionLocal()
+            chat_msg = ChatMessage(
+                user_id=user.id,
+                username=user.username,
+                message=message,
+                room=room
+            )
+            db.add(chat_msg)
+            db.commit()
+            db.close()
+
+            from datetime import timedelta
+            IST = timedelta(hours=5, minutes=30)
+            now_ist = (datetime.utcnow() + IST).strftime("%H:%M")
+
+            await manager.broadcast(room, {
+                "type": "message",
+                "username": user.username,
+                "message": message,
+                "timestamp": now_ist
+            })
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, room)
+        await manager.broadcast(room, {
+            "type": "system",
+            "message": f"{user.username} left the chat"
+        })
+
+@app.get("/chat-page")
+def chat_page():
+    return FileResponse("chat.html")
+
+@app.get("/chat/history/{room}")
+def chat_history(room: str, token: str = Cookie(None)):
+    user = get_user_from_token(token)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    db = SessionLocal()
+    from datetime import timedelta
+    IST = timedelta(hours=5, minutes=30)
+    messages = db.query(ChatMessage).filter(
+        ChatMessage.room == room
+    ).order_by(ChatMessage.timestamp.desc()).limit(50).all()
+    db.close()
+    return [{"username": m.username, "message": m.message,
+             "timestamp": (m.timestamp + IST).strftime("%d %b %H:%M"),
+             "is_me": m.user_id == user.id} for m in reversed(messages)]
 
 @app.get("/")
 def dashboard():

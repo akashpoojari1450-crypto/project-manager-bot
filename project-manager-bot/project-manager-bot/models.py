@@ -55,6 +55,15 @@ class Task(Base):
     assignee = relationship("User", foreign_keys=[assigned_to])
     team = relationship("Team", back_populates="tasks")
 
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    username = Column(String)
+    message = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    room = Column(String, default="general")
+
 Base.metadata.create_all(engine)
 
 class Comment(Base):
