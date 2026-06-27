@@ -85,6 +85,7 @@ def create_task(task: TaskCreate, token: str = Cookie(None)):
     db.close()
 
     # Send email notification on task creation
+    print(f"DEBUG: Creating task notification for user={user.username} email={user.email}")
     try:
         from notifier import send_email, send_whatsapp
         from datetime import timedelta
