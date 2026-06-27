@@ -1,812 +1,462 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Project Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1D4ED8">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ProjManager">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Manager AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #F0F4FF; min-height: 100vh; }
+body.dark { background: #0f172a; color: #e2e8f0; }
 
-    :root {
-      --primary: #1D4ED8;
-      --primary-dark: #1E40AF;
-      --primary-light: #EFF6FF;
-      --success: #10B981;
-      --success-light: #D1FAE5;
-      --warning: #F59E0B;
-      --warning-light: #FEF3C7;
-      --danger: #EF4444;
-      --danger-light: #FEE2E2;
-      --gray: #6B7280;
-      --gray-light: #F9FAFB;
-      --border: #E5E7EB;
-      --text: #111827;
-      --text-secondary: #6B7280;
-      --card-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-      --card-shadow-hover: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
-      --radius: 16px;
-      --radius-sm: 10px;
-    }
+.navbar {
+  background: linear-gradient(135deg, #1D4ED8, #2563EB);
+  color: white; padding: 14px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px rgba(29,78,216,0.3);
+}
+.navbar h1 { font-size: 18px; font-weight: 800; }
+.nav-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nav-btn {
+  background: rgba(255,255,255,0.15);
+  color: white; border: 1px solid rgba(255,255,255,0.25);
+  padding: 7px 14px; border-radius: 20px;
+  cursor: pointer; font-size: 13px; font-weight: 600;
+  font-family: inherit; transition: all 0.2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.25); }
+.nav-btn.red { background: rgba(239,68,68,0.25); border-color: rgba(239,68,68,0.4); }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #F3F4F6;
-      min-height: 100vh;
-      color: var(--text);
-    }
+.container { max-width: 720px; margin: 0 auto; padding: 16px; }
 
-    /* ── NAVBAR ── */
-    .navbar {
-      background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
-      color: white;
-      padding: 0 24px;
-      height: 64px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 20px rgba(29,78,216,0.4);
-    }
-    .navbar h1 {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .navbar h1::before { content: '⚡'; }
-    .navbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-    .username {
-      font-size: 13px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.15);
-      padding: 6px 12px;
-      border-radius: 20px;
-    }
-    .logout-btn {
-      background: rgba(255,255,255,0.15);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.3);
-      padding: 7px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .logout-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+.stat-card { background: white; border-radius: 14px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+body.dark .stat-card { background: #1e293b; }
+.stat-card .num { font-size: 28px; font-weight: 800; }
+.stat-card .lbl { font-size: 11px; color: #888; margin-top: 2px; }
+.red-num { color: #EF4444; }
+.orange-num { color: #F59E0B; }
+.green-num { color: #10B981; }
 
-    /* ── CONTAINER ── */
-    .container { max-width: 780px; margin: 0 auto; padding: 24px 16px; }
+.form-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+body.dark .form-card { background: #1e293b; }
+.form-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #1D4ED8; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-grid input, .form-full input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid #E5E7EB; border-radius: 10px;
+  font-size: 14px; font-family: inherit; outline: none;
+  background: #F9FAFB; color: #111;
+  transition: border 0.2s;
+}
+.form-grid input:focus, .form-full input:focus { border-color: #1D4ED8; background: white; }
+body.dark .form-grid input, body.dark .form-full input { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+.form-full { margin-bottom: 10px; }
+.add-btn {
+  width: 100%; background: linear-gradient(135deg, #1D4ED8, #2563EB);
+  color: white; border: none; padding: 13px; border-radius: 10px;
+  font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.add-btn:hover { opacity: 0.9; }
+.success-msg { color: #10B981; font-size: 13px; display: none; margin-top: 8px; text-align: center; font-weight: 600; }
+.error-msg { color: #EF4444; font-size: 13px; display: none; margin-top: 8px; text-align: center; font-weight: 600; }
 
-    /* ── STATS ROW ── */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      background: white;
-      border-radius: var(--radius);
-      padding: 20px 16px;
-      text-align: center;
-      box-shadow: var(--card-shadow);
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-    }
-    .stat-red::before { background: var(--danger); }
-    .stat-orange::before { background: var(--warning); }
-    .stat-green::before { background: var(--success); }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
-    .stat-card .num { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
-    .stat-card .label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-red .num { color: var(--danger); }
-    .stat-orange .num { color: var(--warning); }
-    .stat-green .num { color: var(--success); }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.section-title { font-size: 15px; font-weight: 700; color: #374151; }
+body.dark .section-title { color: #e2e8f0; }
+.pdf-btn {
+  background: linear-gradient(135deg, #1D4ED8, #2563EB);
+  color: white; padding: 8px 16px; border-radius: 10px;
+  text-decoration: none; font-size: 13px; font-weight: 600;
+}
 
-    /* ── FORM CARD ── */
-    .form-card {
-      background: white;
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border);
-    }
-    .form-card h2 {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .form-grid input, .form-full input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      transition: all 0.2s;
-      background: var(--gray-light);
-      color: var(--text);
-    }
-    .form-grid input:focus, .form-full input:focus {
-      border-color: var(--primary);
-      background: white;
-      box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
-    }
-    .form-full { margin-bottom: 12px; }
-    .add-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #1D4ED8, #2563EB);
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: var(--radius-sm);
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.3px;
-      box-shadow: 0 4px 15px rgba(29,78,216,0.4);
-    }
-    .add-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,78,216,0.5); }
-    .add-btn:active { transform: translateY(0); }
-    .success-msg { color: var(--success); font-size: 13px; display: none; margin-top: 10px; text-align: center; font-weight: 600; padding: 10px; background: var(--success-light); border-radius: 8px; }
-    .error-msg { color: var(--danger); font-size: 13px; display: none; margin-top: 10px; text-align: center; font-weight: 600; padding: 10px; background: var(--danger-light); border-radius: 8px; }
+.task-card {
+  background: white; border-radius: 14px; padding: 16px;
+  margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 5px solid #ccc;
+}
+body.dark .task-card { background: #1e293b; }
+.task-card.overdue { border-left-color: #EF4444; }
+.task-card.urgent { border-left-color: #F59E0B; }
+.task-card.ontrack { border-left-color: #10B981; }
+.task-card.done { border-left-color: #9CA3AF; opacity: 0.7; }
 
-    /* ── TASK CARDS ── */
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .task-card {
-      background: white;
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 14px;
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border);
-      border-left: 4px solid #ccc;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .task-card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover); }
-    .task-card.overdue { border-left-color: var(--danger); background: linear-gradient(to right, #FFF5F5, white); }
-    .task-card.urgent { border-left-color: var(--warning); background: linear-gradient(to right, #FFFBF0, white); }
-    .task-card.ontrack { border-left-color: var(--success); background: linear-gradient(to right, #F0FDF9, white); }
-    .task-card.done { border-left-color: #D1D5DB; opacity: 0.7; }
+.task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.task-title { font-size: 16px; font-weight: 700; color: #111827; }
+body.dark .task-title { color: #f1f5f9; }
+.badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.badge-red { background: #FEE2E2; color: #EF4444; }
+.badge-orange { background: #FEF3C7; color: #D97706; }
+.badge-green { background: #D1FAE5; color: #059669; }
+.badge-gray { background: #F3F4F6; color: #9CA3AF; }
 
-    .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 10px; }
-    .task-title { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.3; }
-    .task-badge {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 20px;
-      white-space: nowrap;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      flex-shrink: 0;
-    }
-    .badge-red { background: var(--danger-light); color: var(--danger); }
-    .badge-orange { background: var(--warning-light); color: #D97706; }
-    .badge-green { background: var(--success-light); color: #059669; }
-    .badge-gray { background: #F3F4F6; color: #9CA3AF; }
+.task-meta { font-size: 13px; color: #6B7280; margin-bottom: 5px; }
+.task-time { font-size: 17px; font-weight: 700; color: #1D4ED8; margin-bottom: 5px; }
+body.dark .task-time { color: #60A5FA; }
+.task-risk { font-size: 12px; color: #9CA3AF; margin-bottom: 12px; }
 
-    .task-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 12px; }
-    .task-meta-item { display: flex; align-items: center; gap: 4px; }
-    .task-time { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 4px; letter-spacing: -0.5px; }
-    .task-risk { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; font-weight: 500; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-complete {
+  flex: 1; background: #D1FAE5; color: #059669;
+  border: none; padding: 9px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.btn-complete:disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+.btn-share { background: #DBEAFE; color: #1D4ED8; border: none; padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-notes { background: #D1FAE5; color: #059669; border: none; padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-delete { background: #FEE2E2; color: #EF4444; border: none; padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
 
-    .task-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-    .task-actions-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.refresh-bar { text-align: center; color: #9CA3AF; font-size: 12px; margin-bottom: 12px; }
 
-    .complete-btn {
-      background: var(--success-light);
-      color: #059669;
-      border: none;
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .complete-btn:hover { background: #A7F3D0; }
-    .complete-btn:disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+/* Modal */
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; align-items: center; justify-content: center; padding: 20px; }
+.modal-box { background: white; border-radius: 16px; padding: 24px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; }
+body.dark .modal-box { background: #1e293b; color: #e2e8f0; }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.modal-close { float: right; background: #F3F4F6; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-family: inherit; font-weight: 600; }
 
-    .delete-btn {
-      background: var(--danger-light);
-      color: var(--danger);
-      border: none;
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .delete-btn:hover { background: #FECACA; }
+/* Chat */
+.chat-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #1D4ED8, #2563EB); color: white; font-size: 24px; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(29,78,216,0.4); z-index: 998; }
+.chat-box { display: none; position: fixed; bottom: 90px; right: 24px; width: 340px; height: 480px; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 998; flex-direction: column; overflow: hidden; }
+body.dark .chat-box { background: #1e293b; }
+.chat-header-bar { background: linear-gradient(135deg, #1D4ED8, #2563EB); color: white; padding: 14px 16px; font-weight: 700; font-size: 14px; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.msg { padding: 10px 13px; border-radius: 12px; font-size: 13px; line-height: 1.5; max-width: 85%; }
+.msg.user { background: #1D4ED8; color: white; align-self: flex-end; }
+.msg.bot { background: #F0F4FF; color: #111; align-self: flex-start; }
+body.dark .msg.bot { background: #0f172a; color: #e2e8f0; }
+.chat-input-row { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #E5E7EB; }
+.chat-input { flex: 1; border: 1.5px solid #E5E7EB; border-radius: 10px; padding: 9px 12px; font-size: 13px; font-family: inherit; outline: none; }
+.chat-input:focus { border-color: #1D4ED8; }
+.chat-send { background: #1D4ED8; color: white; border: none; border-radius: 10px; padding: 9px 14px; cursor: pointer; font-size: 15px; }
 
-    .refresh-bar { text-align: center; color: #9CA3AF; font-size: 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-
-    /* ── SEARCH BAR ── */
-    .search-bar {
-      background: white;
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border);
-    }
-    .search-bar input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      margin-bottom: 12px;
-      background: var(--gray-light);
-      transition: all 0.2s;
-    }
-    .search-bar input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(29,78,216,0.1); }
-    .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filter-btn {
-      padding: 7px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      background: white;
-      color: var(--text-secondary);
-      transition: all 0.2s;
-      font-family: inherit;
-      color: #555;
-      transition: all 0.2s;
-    }
-    .filter-btn.active { background: #1e3c72; color: white; }
-
-    @media (max-width: 480px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .stats-row { grid-template-columns: repeat(3, 1fr); }
-      .stat-card .num { font-size: 22px; }
-    }
-  
-    body.dark {
-      background: #0F172A;
-      color: #F1F5F9;
-      --text: #F1F5F9;
-      --text-secondary: #94A3B8;
-      --border: #1E293B;
-      --gray-light: #1E293B;
-    }
-    body.dark .task-card { background: #1E293B; border-color: #334155; }
-    body.dark .task-card.overdue { background: linear-gradient(to right, #2D1B1B, #1E293B); }
-    body.dark .task-card.urgent { background: linear-gradient(to right, #2D2110, #1E293B); }
-    body.dark .task-card.ontrack { background: linear-gradient(to right, #0F2D22, #1E293B); }
-    body.dark .navbar { background: linear-gradient(135deg, #1E3A8A, #1E40AF); }
-    body.dark .form-card { background: #1E293B; border-color: #334155; }
-    body.dark .search-bar { background: #1E293B; border-color: #334155; }
-    body.dark .stat-card { background: #1E293B; border-color: #334155; }
-    body.dark input { background: #0F172A; color: #F1F5F9; border-color: #334155; }
-    body.dark .add-btn { background: linear-gradient(135deg, #1D4ED8, #2563EB); }
-    body.dark .complete-btn { background: #064E3B; color: #6EE7B7; }
-    body.dark .complete-btn:disabled { background: #1E293B; color: #475569; }
-    body.dark .delete-btn { background: #450A0A; color: #FCA5A5; }
-    body.dark .filter-btn { background: #0F172A; color: #94A3B8; border-color: #334155; }
-    body.dark .filter-btn.active { background: #1D4ED8; color: white; border-color: #1D4ED8; }
-    body.dark .section-title { color: #F1F5F9; }
-    body.dark .task-title { color: #F1F5F9; }
-
-    .chat-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #1e3c72, #2a69ac); color: white; font-size: 24px; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 1000; }
-    .chat-box { position: fixed; bottom: 90px; right: 24px; width: 340px; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 1000; display: none; flex-direction: column; max-height: 480px; }
-    body.dark .chat-box { background: #16213e; color: #e0e0e0; }
-    .chat-header { background: linear-gradient(135deg, #1e3c72, #2a69ac); color: white; padding: 14px 16px; border-radius: 16px 16px 0 0; font-weight: 600; font-size: 14px; }
-    .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 320px; }
-    .msg { padding: 10px 13px; border-radius: 12px; font-size: 13px; max-width: 85%; line-height: 1.4; }
-    .msg.user { background: #1e3c72; color: white; align-self: flex-end; border-radius: 12px 12px 0 12px; }
-    .msg.bot { background: #f0f4f8; color: #333; align-self: flex-start; border-radius: 12px 12px 12px 0; }
-    body.dark .msg.bot { background: #0f3460; color: #e0e0e0; }
-    .chat-input-row { display: flex; padding: 10px; gap: 8px; border-top: 1px solid #eee; }
-    body.dark .chat-input-row { border-color: #0f3460; }
-    .chat-input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }
-    body.dark .chat-input { background: #0f3460; color: #e0e0e0; border-color: #1a1a2e; }
-    .chat-send { background: #1e3c72; color: white; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; }
+@media(max-width:480px) { .form-grid { grid-template-columns: 1fr; } .nav-btn { font-size: 11px; padding: 6px 10px; } }
 </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <div class="navbar">
-    <h1>📋 Project Manager</h1>
-    <div class="navbar-right">
-      <span class="username" id="username-display"></span>
-      <button class="logout-btn" onclick="getDailyBriefing()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25)">🧠 Briefing</button>
-      <button class="logout-btn" onclick="getHoroscope()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25)">🔮 Horoscope</button>
-      <button class="logout-btn" onclick="toggleDark()" id="darkBtn" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25)">🌙 Dark</button>
-      <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:20px;font-size:13px;">👥 Teams</a>
-      <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 10px;border-radius:20px;font-size:12px;white-space:nowrap;">👥 Teams</a><button class="logout-btn" onclick="logout()" style="background:rgba(239,68,68,0.25);border:1px solid rgba(239,68,68,0.4)">🚪 Logout</button>
-    </div>
+<div class="navbar">
+  <h1>⚡ Project Manager AI</h1>
+  <div class="nav-right">
+    <span id="username-display" style="font-size:13px;opacity:0.9"></span>
+    <button class="nav-btn" onclick="getDailyBriefing()">🧠 Briefing</button>
+    <button class="nav-btn" onclick="getHoroscope()">🔮 Horoscope</button>
+    <button class="nav-btn" id="darkBtn" onclick="toggleDark()">🌙 Dark</button>
+    <button class="nav-btn red" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card"><div class="num red-num" id="stat-overdue">0</div><div class="lbl">Overdue</div></div>
+    <div class="stat-card"><div class="num orange-num" id="stat-urgent">0</div><div class="lbl">Urgent</div></div>
+    <div class="stat-card"><div class="num green-num" id="stat-ontrack">0</div><div class="lbl">On Track</div></div>
   </div>
 
-  <div class="container">
-
-    <!-- STATS -->
-    <div class="stats-row" id="stats-row">
-      <div class="stat-card stat-red"><div class="num" id="stat-overdue">0</div><div class="label">Overdue</div></div>
-      <div class="stat-card stat-orange"><div class="num" id="stat-urgent">0</div><div class="label">Urgent</div></div>
-      <div class="stat-card stat-green"><div class="num" id="stat-ontrack">0</div><div class="label">On Track</div></div>
+  <div class="form-card">
+    <h2>➕ Add New Task</h2>
+    <div class="form-grid">
+      <input type="text" id="title" placeholder="Task title">
+      <input type="text" id="client_name" placeholder="Client name">
     </div>
+    <div class="form-full"><input type="email" id="client_email" placeholder="Client email"></div>
+    <div class="form-full"><input type="datetime-local" id="due_date"></div>
+    <button class="add-btn" onclick="createTask()">➕ Add Task</button>
+    <div class="success-msg" id="success-msg">✅ Task created!</div>
+    <div class="error-msg" id="error-msg">❌ Please fill all fields!</div>
+  </div>
 
-    <!-- ADD TASK FORM -->
-    <div class="form-card">
-      <h2>➕ Add New Task</h2>
-      <div class="form-grid">
-        <input type="text" id="title" placeholder="Task title" />
-        <input type="text" id="client_name" placeholder="Client name" />
-      </div>
-      <div class="form-full">
-        <input type="email" id="client_email" placeholder="Client email" />
-      </div>
-      <div class="form-full">
-        <input type="datetime-local" id="due_date" />
-      </div>
-      <button class="add-btn" onclick="createTask()">➕ Add Task</button>
-      <a href="/analytics" style="background:linear-gradient(135deg,#43a047,#2e7d32);color:white;padding:9px 16px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:600;margin-left:8px">📊 Analytics</a>
-      <a href="/report/pdf" style="background:linear-gradient(135deg,#1e3c72,#2a69ac);color:white;padding:9px 16px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:600;margin-left:8px">📄 PDF Report</a>
-      <p class="success-msg" id="success-msg">✅ Task created!</p>
-      <p class="error-msg" id="error-msg">❌ Please fill all fields!</p>
-    </div>
-
-    <!-- TASK LIST -->
-    <!-- SEARCH AND FILTER -->
-    <div class="search-bar">
-      <input type="text" id="search-input" placeholder="🔍 Search tasks..." oninput="filterTasks()" />
-      <div class="filter-btns">
-        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
-        <button class="filter-btn" onclick="setFilter('overdue', this)">🔴 Overdue</button>
-        <button class="filter-btn" onclick="setFilter('urgent', this)">🟡 Urgent</button>
-        <button class="filter-btn" onclick="setFilter('ontrack', this)">🟢 On Track</button>
-        <button class="filter-btn" onclick="setFilter('done', this)">✅ Done</button>
-      </div>
-    </div>
-
+  <div class="section-header">
     <div class="section-title">📌 Your Tasks</div>
-    <div class="refresh-bar">🔄 Auto-refreshes every 10 seconds</div>
-    <div id="tasks">Loading...</div>
-
+    <a class="pdf-btn" href="/report/pdf">📄 Download PDF</a>
   </div>
+  <div class="refresh-bar">🔄 Auto-refreshes every 10 seconds</div>
+  <div id="tasks">Loading...</div>
+</div>
 
-  <script>
-    let allTasks = [];
-    let currentFilter = "all";
-
-    function setFilter(filter, btn) {
-      currentFilter = filter;
-      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      filterTasks();
-    }
-
-    function filterTasks() {
-      const search = document.getElementById("search-input").value.toLowerCase();
-      let filtered = allTasks.filter(task => {
-        const matchSearch = task.title.toLowerCase().includes(search) ||
-                           task.client_name.toLowerCase().includes(search) ||
-                           task.client_email.toLowerCase().includes(search);
-        let matchFilter = true;
-        if (currentFilter === "overdue") matchFilter = task.status.includes("OVERDUE");
-        else if (currentFilter === "urgent") matchFilter = task.status.includes("URGENT") || task.status.includes("TODAY") || task.status.includes("TOMORROW");
-        else if (currentFilter === "ontrack") matchFilter = task.status.includes("ON TRACK");
-        else if (currentFilter === "done") matchFilter = task.is_completed;
-        return matchSearch && matchFilter;
-      });
-      renderTasks(filtered);
-    }
-
-    function renderTasks(tasks) {
-      if (tasks.length === 0) {
-        document.getElementById("tasks").innerHTML = "<p style=\"color:#aaa;text-align:center;padding:30px\">No tasks found!</p>";
-        return;
-      }
-      let html = "";
-      tasks.forEach(task => {
-        let cardClass = "ontrack";
-        let badgeClass = "badge-green";
-        let badgeText = "ON TRACK";
-        if (task.is_completed) { cardClass = "done"; badgeClass = "badge-gray"; badgeText = "DONE"; }
-        else if (task.status.includes("OVERDUE")) { cardClass = "overdue"; badgeClass = "badge-red"; badgeText = "OVERDUE"; }
-        else if (task.status.includes("TODAY")) { cardClass = "urgent"; badgeClass = "badge-red"; badgeText = "TODAY"; }
-        else if (task.status.includes("TOMORROW")) { cardClass = "urgent"; badgeClass = "badge-orange"; badgeText = "TOMORROW"; }
-        else if (task.status.includes("URGENT")) { cardClass = "urgent"; badgeClass = "badge-orange"; badgeText = "URGENT"; }
-        html += `
-          <div class="task-card ${cardClass}">
-            <div class="task-header">
-              <div class="task-title">${task.title}</div>
-              <span class="task-badge ${badgeClass}">${badgeText}</span>
-            </div>
-            <div class="task-meta">
-              <span class="task-meta-item">👤 ${task.client_name}</span>
-              <span class="task-meta-item">📧 ${task.client_email}</span>
-            </div>
-            <div class="task-meta">📅 Due: ${task.due_date}</div>
-            <div class="task-time">${task.time_left}</div>
-            <div class="task-risk">${task.risk_label}</div>
-            <div class="task-actions">
-              <button class="complete-btn" onclick="completeTask(${task.id})" ${task.is_completed ? "disabled" : ""}>
-                ${task.is_completed ? "✅ Completed" : "✓ Complete"}
-              </button>
-              <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️ Delete</button>
-            </div>
-            <div class="task-actions-row">
-              <button onclick="openComments(${task.id})" style="background:#EFF6FF;color:#1D4ED8;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s">📝 Notes</button>
-              <button onclick="sharePortal(${task.id})" style="background:#F0FDF4;color:#059669;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s">🔗 Share</button>
-              ${!task.is_completed ? `<button onclick="rescheduleTask(${task.id})" style="background:#FFF7ED;color:#D97706;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s">🔄 Reschedule</button>` : ""}
-            </div>
-          </div>\`
-      });
-      document.getElementById("tasks").innerHTML = html;
-    }
-
-    async function logout() {
-      try { await fetch("/logout", { method: "POST" }); } catch(e) {}
-      window.location.href = "/login-page";
-    }
-
-    async function checkLogin() {
-      const res = await fetch("/me");
-      if (res.status === 401) { window.location.href = "/login-page"; return; }
-      const user = await res.json();
-      document.getElementById("username-display").innerText = "👤 " + user.username;
-      loadTasks();
-      setInterval(loadTasks, 10000);
-    }
-
-    async function createTask() {
-      const title = document.getElementById("title").value;
-      const client_name = document.getElementById("client_name").value;
-      const client_email = document.getElementById("client_email").value;
-      const due_date = document.getElementById("due_date").value;
-      if (!title || !client_name || !client_email || !due_date) {
-        document.getElementById("error-msg").style.display = "block";
-        document.getElementById("success-msg").style.display = "none";
-        return;
-      }
-      const res = await fetch("/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, client_name, client_email, due_date: new Date(due_date).toISOString() })
-      });
-      if (res.ok) {
-        document.getElementById("title").value = "";
-        document.getElementById("client_name").value = "";
-        document.getElementById("client_email").value = "";
-        document.getElementById("due_date").value = "";
-        document.getElementById("success-msg").style.display = "block";
-        document.getElementById("error-msg").style.display = "none";
-        setTimeout(() => document.getElementById("success-msg").style.display = "none", 3000);
-        loadTasks();
-      }
-    }
-
-    async function loadTasks() {
-      try {
-        const res = await fetch("/tasks/live");
-        if (res.status === 401) { window.location.href = "/login-page"; return; }
-        const tasks = await res.json();
-
-        allTasks = tasks;
-        filterTasks();
-
-        // Update stats
-        let overdue = 0, urgent = 0, ontrack = 0;
-        tasks.forEach(t => {
-          if (!t.is_completed) {
-            if (t.status.includes("OVERDUE")) overdue++;
-            else if (t.status.includes("URGENT") || t.status.includes("TODAY") || t.status.includes("TOMORROW")) urgent++;
-            else ontrack++;
-          }
-        });
-        document.getElementById("stat-overdue").innerText = overdue;
-        document.getElementById("stat-urgent").innerText = urgent;
-        document.getElementById("stat-ontrack").innerText = ontrack;
-
-        if (tasks.length === 0) {
-          document.getElementById("tasks").innerHTML = "<p style=\"color:#aaa;text-align:center;padding:30px\">No tasks yet. Add one above!</p>";
-          return;
-        }
-
-        let html = "";
-        tasks.forEach(task => {
-          let cardClass = "ontrack";
-          let badgeClass = "badge-green";
-          let badgeText = "ON TRACK";
-          if (task.is_completed) { cardClass = "done"; badgeClass = "badge-gray"; badgeText = "DONE"; }
-          else if (task.status.includes("OVERDUE")) { cardClass = "overdue"; badgeClass = "badge-red"; badgeText = "OVERDUE"; }
-          else if (task.status.includes("TODAY")) { cardClass = "urgent"; badgeClass = "badge-red"; badgeText = "TODAY"; }
-          else if (task.status.includes("TOMORROW")) { cardClass = "urgent"; badgeClass = "badge-orange"; badgeText = "TOMORROW"; }
-          else if (task.status.includes("URGENT")) { cardClass = "urgent"; badgeClass = "badge-orange"; badgeText = "URGENT"; }
-
-          html += `
-            <div class="task-card ${cardClass}">
-              <div class="task-header">
-                <div class="task-title">${task.title}</div>
-                <span class="task-badge ${badgeClass}">${badgeText}</span>
-              </div>
-              <div class="task-meta">
-                <span>👤 ${task.client_name}</span>
-                <span>📧 ${task.client_email}</span>
-              </div>
-              <div class="task-meta">📅 Due: ${task.due_date}</div>
-              <div class="task-time">⏳ ${task.time_left}</div>
-              <div class="task-risk">${task.risk_label}</div>
-              <button onclick="sharePortal(${task.id})" style="background:#e3f2fd;color:#1565c0;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-right:6px">🔗 Share</button>
-              <button class="complete-btn" onclick="completeTask(${task.id})" ${task.is_completed ? "disabled" : ""}>
-                ${task.is_completed ? "✅ Completed" : "Mark as Complete ✓"}
-              </button>
-              <button onclick="openComments(${task.id})" style="background:#e8f5e9;color:#2e7d32;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-top:6px">📝 Notes</button>
-            <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️ Delete Task</button>
-            </div>`;
-        });
-        document.getElementById("tasks").innerHTML = html;
-      } catch (err) {
-        document.getElementById("tasks").innerHTML = "<p style=\"color:red;text-align:center\">Error loading tasks.</p>";
-      }
-    }
-
-    async function deleteTask(id) {
-      if (!confirm("Delete this task?")) return;
-      await fetch("/tasks/" + id, { method: "DELETE" });
-      loadTasks();
-    }
-
-    async function completeTask(id) {
-      await fetch("/tasks/" + id + "/complete", { method: "PUT" });
-      loadTasks();
-    }
-
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('SW registered'))
-        .catch(err => console.log('SW error:', err));
-    }
-
-    checkLogin();
-
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark');
-        const btn = document.getElementById('darkBtn');
-        if (btn) btn.textContent = '☀️ Light';
-    }
-
-    function toggleChat() {
-        const box = document.getElementById('chatBox');
-        box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    async function sendChat() {
-        const input = document.getElementById('chatInput');
-        const messages = document.getElementById('chatMessages');
-        const msg = input.value.trim();
-        if (!msg) return;
-        input.value = '';
-        messages.innerHTML += `<div class="msg user">${msg}</div>`;
-        messages.innerHTML += `<div class="msg bot" id="typing">...</div>`;
-        messages.scrollTop = messages.scrollHeight;
-        try {
-            const res = await fetch('/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({message: msg, history: []})
-            });
-            const data = await res.json();
-            const typing = document.getElementById('typing');
-            if (typing) typing.remove();
-            messages.innerHTML += `<div class="msg bot">${data.reply || 'Sorry, something went wrong.'}</div>`;
-        } catch(e) {
-            const typing = document.getElementById('typing');
-            if (typing) typing.remove();
-            messages.innerHTML += `<div class="msg bot">Connection error. Try again.</div>`;
-        }
-        messages.scrollTop = messages.scrollHeight;
-    }
-
-    function toggleDark() {
-        const isDark = document.body.classList.toggle('dark');
-        localStorage.setItem('darkMode', isDark);
-        const btn = document.getElementById('darkBtn');
-        if (btn) btn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
-    }
-
-    async function logout() {
-        try { await fetch('/logout', { method: 'POST' }); } catch(e) {}
-        window.location.href = '/login-page';
-    }
-
-    async function sharePortal(taskId) {
-        const res = await fetch(`/portal/generate/${taskId}`);
-        const data = await res.json();
-        if (data.portal_url) {
-            const fullUrl = window.location.origin + data.portal_url;
-            try { await navigator.clipboard.writeText(fullUrl); } catch(e) {}
-            alert('✅ Client portal link copied!\n\n' + fullUrl);
-        } else {
-            alert('Error generating link.');
-        }
-    }
-
-    async function getHoroscope() {
-        document.getElementById('horoscopeModal').style.display = 'flex';
-        document.getElementById('horoscopeContent').textContent = '🔮 Reading the stars...';
-        try {
-            const res = await fetch('/horoscope');
-            const data = await res.json();
-            document.getElementById('horoscopeContent').textContent = data.horoscope || 'The stars are unclear tonight.';
-        } catch(e) {
-            document.getElementById('horoscopeContent').textContent = 'Failed to load. Try again.';
-        }
-    }
-
-    async function getDailyBriefing() {
-        document.getElementById('briefingModal').style.display = 'flex';
-        document.getElementById('briefingContent').textContent = '⏳ Generating your briefing...';
-        try {
-            const res = await fetch('/briefing');
-            const data = await res.json();
-            document.getElementById('briefingContent').textContent = data.briefing || 'Failed to generate briefing.';
-        } catch(e) {
-            document.getElementById('briefingContent').textContent = 'Failed to load. Try again.';
-        }
-    }
-
-    async function rescheduleTask(taskId) {
-        const btn = event.target;
-        btn.textContent = '⏳ Thinking...';
-        btn.disabled = true;
-        try {
-            const res = await fetch(`/tasks/${taskId}/reschedule`);
-            const data = await res.json();
-            alert('💡 AI Suggestion:\n\n' + data.suggestion);
-        } catch(e) {
-            alert('Error getting suggestion.');
-        }
-        btn.textContent = '🔄 AI Reschedule';
-        btn.disabled = false;
-    }
-
-    let currentTaskId = null;
-    async function openComments(taskId) {
-        currentTaskId = taskId;
-        document.getElementById('commentsModal').style.display = 'flex';
-        await loadComments(taskId);
-    }
-
-    async function loadComments(taskId) {
-        try {
-            const res = await fetch(`/tasks/${taskId}/comments`);
-            const data = await res.json();
-            const list = document.getElementById('commentsList');
-            if (!list) return;
-            list.innerHTML = data.length === 0
-                ? '<p style="color:#aaa;font-size:13px">No notes yet.</p>'
-                : data.map(c => `<div style="background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:8px;font-size:13px"><strong>${c.author || 'You'}</strong>: ${c.content}<br><small style="color:#aaa">${c.created_at || ''}</small></div>`).join('');
-        } catch(e) {}
-    }
-
-    async function submitComment() {
-        const input = document.getElementById('commentInput');
-        const content = input ? input.value.trim() : '';
-        if (!content || !currentTaskId) return;
-        try {
-            await fetch(`/tasks/${currentTaskId}/comments`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({content})
-            });
-            input.value = '';
-            await loadComments(currentTaskId);
-        } catch(e) {}
-    }
-
-    // Restore dark mode
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark');
-        const btn = document.getElementById('darkBtn');
-        if (btn) btn.textContent = '☀️ Light';
-    }
-
-</script>
-
-
-  <!-- Chatbot -->
-  <button class="chat-fab" onclick="toggleChat()">🤖</button>
-  <div class="chat-box" id="chatBox">
-    <div class="chat-header">🤖 AI Task Assistant</div>
-    <div class="chat-messages" id="chatMessages">
-      <div class="msg bot">Hi! I know all your tasks. Ask me anything — "what's overdue?", "highest risk task?", "summarize my week" 👋</div>
-    </div>
-    <div class="chat-input-row">
-      <input class="chat-input" id="chatInput" placeholder="Ask about your tasks..." onkeydown="if(event.key==='Enter') sendChat()">
-      <button class="chat-send" onclick="sendChat()">Send</button>
-    </div>
+<!-- Briefing Modal -->
+<div class="modal" id="briefingModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('briefingModal').style.display='none'">✕ Close</button>
+    <div class="modal-title">🧠 Daily AI Briefing</div>
+    <div id="briefingContent">Loading...</div>
   </div>
+</div>
 
-  <div id="horoscopeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center">
-    <div style="background:linear-gradient(135deg,#0d0d2b,#1a0533);color:#e0c8ff;padding:32px;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow-y:auto;position:relative;border:1px solid #aa00ff;box-shadow:0 0 40px #aa00ff55">
-      <button onclick="document.getElementById('horoscopeModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#e0c8ff">✕</button>
-      <h2 style="color:#ce93d8;margin-bottom:16px;text-align:center">🔮 Project Horoscope</h2>
-      <div id="horoscopeContent" style="line-height:1.8;white-space:pre-wrap;font-size:14px;color:#e0c8ff">Loading...</div>
-    </div>
+<!-- Horoscope Modal -->
+<div class="modal" id="horoscopeModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('horoscopeModal').style.display='none'">✕ Close</button>
+    <div class="modal-title">🔮 Project Horoscope</div>
+    <div id="horoscopeContent">Loading...</div>
   </div>
-
-  <div id="horoscopeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center">
-    <div style="background:linear-gradient(135deg,#0d0d2b,#1a0533);color:#e0c8ff;padding:32px;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow-y:auto;position:relative;border:1px solid #aa00ff;box-shadow:0 0 40px #aa00ff55">
-      <button onclick="document.getElementById('horoscopeModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#e0c8ff">✕</button>
-      <h2 style="color:#ce93d8;margin-bottom:16px;text-align:center">🔮 Project Horoscope</h2>
-      <div id="horoscopeContent" style="line-height:1.8;white-space:pre-wrap;font-size:14px;color:#e0c8ff">Loading...</div>
-    </div>
-  </div>
-
-  <div id="briefingModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center">
-    <div style="background:white;border-radius:16px;padding:28px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;position:relative">
-      <button onclick="document.getElementById('briefingModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer">✕</button>
-      <h2 style="color:#1e3c72;margin-bottom:16px">🧠 AI Daily Briefing</h2>
-      <div id="briefingContent" style="line-height:1.7;white-space:pre-wrap;font-size:14px;color:#333">Loading...</div>
-    </div>
-  </div>
+</div>
 
 <!-- Comments Modal -->
-<div id="commentsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:28px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;position:relative">
-    <button onclick="document.getElementById('commentsModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer">✕</button>
-    <h2 style="color:#1e3c72;margin-bottom:16px">📝 Task Notes & Comments</h2>
-    <div id="commentsList" style="margin-bottom:16px;max-height:300px;overflow-y:auto"></div>
+<div class="modal" id="commentsModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('commentsModal').style.display='none'">✕ Close</button>
+    <div class="modal-title">📝 Notes & Comments</div>
+    <div id="commentsList" style="margin-bottom:14px;max-height:250px;overflow-y:auto"></div>
     <div style="display:flex;gap:8px">
-      <input id="commentInput" placeholder="Add a note or comment..." style="flex:1;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:13px;outline:none">
-      <button onclick="submitComment()" style="background:#1e3c72;color:white;border:none;border-radius:8px;padding:10px 16px;cursor:pointer;font-size:13px">Add</button>
+      <input id="commentInput" placeholder="Add a note..." style="flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px;font-size:13px;outline:none;font-family:inherit">
+      <button onclick="submitComment()" style="background:#1D4ED8;color:white;border:none;border-radius:8px;padding:10px 16px;cursor:pointer;font-weight:600;font-family:inherit">Add</button>
     </div>
   </div>
 </div>
+
+<!-- Chat -->
+<button class="chat-fab" onclick="toggleChat()">🤖</button>
+<div class="chat-box" id="chatBox">
+  <div class="chat-header-bar">🤖 AI Task Assistant</div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg bot">Hi! Ask me anything about your tasks 👋</div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" placeholder="Ask about your tasks..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+  let allTasks = [];
+  let currentTaskId = null;
+
+  async function checkLogin() {
+    const res = await fetch('/me');
+    if (res.status === 401) { window.location.href = '/login-page'; return; }
+    const user = await res.json();
+    document.getElementById('username-display').innerText = '👤 ' + user.username;
+    loadTasks();
+    setInterval(loadTasks, 10000);
+  }
+
+  async function createTask() {
+    const title = document.getElementById('title').value.trim();
+    const client_name = document.getElementById('client_name').value.trim();
+    const client_email = document.getElementById('client_email').value.trim();
+    const due_date = document.getElementById('due_date').value;
+    if (!title || !client_name || !client_email || !due_date) {
+      document.getElementById('error-msg').style.display = 'block';
+      document.getElementById('success-msg').style.display = 'none';
+      return;
+    }
+    const res = await fetch('/tasks', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({title, client_name, client_email, due_date: new Date(due_date).toISOString()})
+    });
+    if (res.ok) {
+      document.getElementById('title').value = '';
+      document.getElementById('client_name').value = '';
+      document.getElementById('client_email').value = '';
+      document.getElementById('due_date').value = '';
+      document.getElementById('success-msg').style.display = 'block';
+      document.getElementById('error-msg').style.display = 'none';
+      setTimeout(() => document.getElementById('success-msg').style.display = 'none', 3000);
+      loadTasks();
+    }
+  }
+
+  async function loadTasks() {
+    try {
+      const res = await fetch('/tasks/live');
+      if (res.status === 401) { window.location.href = '/login-page'; return; }
+      const tasks = await res.json();
+      allTasks = tasks;
+
+      let overdue = 0, urgent = 0, ontrack = 0;
+      tasks.forEach(function(t) {
+        if (!t.is_completed) {
+          if (t.status.includes('OVERDUE')) overdue++;
+          else if (t.status.includes('URGENT') || t.status.includes('TODAY') || t.status.includes('TOMORROW')) urgent++;
+          else ontrack++;
+        }
+      });
+      document.getElementById('stat-overdue').innerText = overdue;
+      document.getElementById('stat-urgent').innerText = urgent;
+      document.getElementById('stat-ontrack').innerText = ontrack;
+
+      if (tasks.length === 0) {
+        document.getElementById('tasks').innerHTML = '<p style="color:#aaa;text-align:center;padding:30px">No tasks yet. Add one above!</p>';
+        return;
+      }
+
+      var html = '';
+      tasks.forEach(function(task) {
+        var cardClass = 'ontrack';
+        var badgeClass = 'badge-green';
+        var badgeText = 'ON TRACK';
+        if (task.is_completed) { cardClass = 'done'; badgeClass = 'badge-gray'; badgeText = 'DONE'; }
+        else if (task.status.includes('OVERDUE')) { cardClass = 'overdue'; badgeClass = 'badge-red'; badgeText = 'OVERDUE'; }
+        else if (task.status.includes('TODAY')) { cardClass = 'urgent'; badgeClass = 'badge-red'; badgeText = 'TODAY'; }
+        else if (task.status.includes('TOMORROW')) { cardClass = 'urgent'; badgeClass = 'badge-orange'; badgeText = 'TOMORROW'; }
+        else if (task.status.includes('URGENT')) { cardClass = 'urgent'; badgeClass = 'badge-orange'; badgeText = 'URGENT'; }
+
+        var disabled = task.is_completed ? 'disabled' : '';
+        var completeText = task.is_completed ? '✅ Completed' : 'Mark Complete ✓';
+
+        html += '<div class="task-card ' + cardClass + '">';
+        html += '<div class="task-header">';
+        html += '<div class="task-title">' + task.title + '</div>';
+        html += '<span class="badge ' + badgeClass + '">' + badgeText + '</span>';
+        html += '</div>';
+        html += '<div class="task-meta">👤 ' + task.client_name + ' &nbsp; 📧 ' + task.client_email + '</div>';
+        html += '<div class="task-meta">📅 Due: ' + task.due_date + '</div>';
+        html += '<div class="task-time">⏳ ' + task.time_left + '</div>';
+        html += '<div class="task-risk">' + task.risk_label + '</div>';
+        html += '<div class="btn-row">';
+        html += '<button class="btn-complete" onclick="completeTask(' + task.id + ')" ' + disabled + '>' + completeText + '</button>';
+        html += '<button class="btn-share" onclick="sharePortal(' + task.id + ')">🔗 Share</button>';
+        html += '<button class="btn-notes" onclick="openComments(' + task.id + ')">📝 Notes</button>';
+        html += '<button class="btn-delete" onclick="deleteTask(' + task.id + ')">🗑️</button>';
+        html += '</div></div>';
+      });
+      document.getElementById('tasks').innerHTML = html;
+    } catch(err) {
+      document.getElementById('tasks').innerHTML = '<p style="color:red;text-align:center">Error loading tasks.</p>';
+    }
+  }
+
+  async function completeTask(id) {
+    await fetch('/tasks/' + id + '/complete', {method: 'PUT'});
+    loadTasks();
+  }
+
+  async function deleteTask(id) {
+    if (!confirm('Delete this task?')) return;
+    await fetch('/tasks/' + id, {method: 'DELETE'});
+    loadTasks();
+  }
+
+  async function sharePortal(taskId) {
+    try {
+      const res = await fetch('/portal/generate/' + taskId);
+      const data = await res.json();
+      if (data.portal_url) {
+        const url = window.location.origin + data.portal_url;
+        try { await navigator.clipboard.writeText(url); } catch(e) {}
+        alert('Link copied!\n\n' + url);
+      }
+    } catch(e) { alert('Error generating link'); }
+  }
+
+  async function openComments(taskId) {
+    currentTaskId = taskId;
+    document.getElementById('commentsModal').style.display = 'flex';
+    loadComments(taskId);
+  }
+
+  async function loadComments(taskId) {
+    try {
+      const res = await fetch('/tasks/' + taskId + '/comments');
+      const data = await res.json();
+      const list = document.getElementById('commentsList');
+      if (!list) return;
+      if (data.length === 0) {
+        list.innerHTML = '<p style="color:#aaa;font-size:13px">No notes yet.</p>';
+      } else {
+        var html = '';
+        data.forEach(function(c) {
+          html += '<div style="background:#f0f4ff;border-radius:8px;padding:10px;margin-bottom:8px;font-size:13px">';
+          html += '<strong>' + (c.author || 'You') + '</strong>: ' + c.content;
+          html += '<br><small style="color:#aaa">' + (c.created_at || '') + '</small></div>';
+        });
+        list.innerHTML = html;
+      }
+    } catch(e) {}
+  }
+
+  async function submitComment() {
+    const input = document.getElementById('commentInput');
+    const text = input ? input.value.trim() : '';
+    if (!text || !currentTaskId) return;
+    try {
+      await fetch('/tasks/' + currentTaskId + '/comments', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({content: text})
+      });
+      input.value = '';
+      loadComments(currentTaskId);
+    } catch(e) {}
+  }
+
+  async function getDailyBriefing() {
+    document.getElementById('briefingModal').style.display = 'flex';
+    document.getElementById('briefingContent').textContent = 'Generating your briefing...';
+    try {
+      const res = await fetch('/briefing');
+      const data = await res.json();
+      document.getElementById('briefingContent').textContent = data.briefing || 'Failed to generate.';
+    } catch(e) {
+      document.getElementById('briefingContent').textContent = 'Failed to load.';
+    }
+  }
+
+  async function getHoroscope() {
+    document.getElementById('horoscopeModal').style.display = 'flex';
+    document.getElementById('horoscopeContent').textContent = 'Reading the stars...';
+    try {
+      const res = await fetch('/horoscope');
+      const data = await res.json();
+      document.getElementById('horoscopeContent').textContent = data.horoscope || 'Stars unclear tonight.';
+    } catch(e) {
+      document.getElementById('horoscopeContent').textContent = 'Failed to load.';
+    }
+  }
+
+  function toggleDark() {
+    var isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('darkBtn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+  }
+
+  async function logout() {
+    try { await fetch('/logout', {method: 'POST'}); } catch(e) {}
+    window.location.href = '/login-page';
+  }
+
+  function toggleChat() {
+    var box = document.getElementById('chatBox');
+    box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+  }
+
+  async function sendChat() {
+    var input = document.getElementById('chatInput');
+    var messages = document.getElementById('chatMessages');
+    var msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    messages.innerHTML += '<div class="msg user">' + msg + '</div>';
+    messages.innerHTML += '<div class="msg bot" id="typing">...</div>';
+    messages.scrollTop = messages.scrollHeight;
+    try {
+      var res = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: msg, history: []})
+      });
+      var data = await res.json();
+      var t = document.getElementById('typing');
+      if (t) t.remove();
+      messages.innerHTML += '<div class="msg bot">' + (data.reply || 'Error') + '</div>';
+    } catch(e) {
+      var t = document.getElementById('typing');
+      if (t) t.remove();
+      messages.innerHTML += '<div class="msg bot">Connection error.</div>';
+    }
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+    document.getElementById('darkBtn').textContent = '☀️ Light';
+  }
+
+  checkLogin();
+</script>
 </body>
 </html>
