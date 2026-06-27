@@ -358,6 +358,7 @@
             <button class="complete-btn" onclick="completeTask(${task.id})" ${task.is_completed ? "disabled" : ""}>
               ${task.is_completed ? "✅ Completed" : "Mark as Complete ✓"}
             </button>
+            <button onclick="openComments(${task.id})" style="background:#e8f5e9;color:#2e7d32;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-top:6px">📝 Notes</button>
             <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️ Delete Task</button>
           </div>`;
       });
@@ -460,6 +461,7 @@
               <button class="complete-btn" onclick="completeTask(${task.id})" ${task.is_completed ? "disabled" : ""}>
                 ${task.is_completed ? "✅ Completed" : "Mark as Complete ✓"}
               </button>
+              <button onclick="openComments(${task.id})" style="background:#e8f5e9;color:#2e7d32;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-top:6px">📝 Notes</button>
             <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️ Delete Task</button>
             </div>`;
         });
