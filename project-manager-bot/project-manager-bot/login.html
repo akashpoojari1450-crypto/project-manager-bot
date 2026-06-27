@@ -3,211 +3,442 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login | Project Manager AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Project Manager AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #2563EB 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .card {
-    background: white;
-    border-radius: 24px;
-    padding: 40px 36px;
-    width: 100%;
-    max-width: 420px;
-    box-shadow: 0 25px 60px rgba(79,70,229,0.3);
-  }
-  .logo {
-    text-align: center;
-    margin-bottom: 28px;
-  }
-  .logo-icon {
-    width: 64px; height: 64px;
-    background: linear-gradient(135deg, #4F46E5, #7C3AED);
-    border-radius: 18px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    margin-bottom: 12px;
-    box-shadow: 0 8px 20px rgba(79,70,229,0.4);
-  }
-  .logo h1 { font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.5px; }
-  .logo p { font-size: 13px; color: #6B7280; margin-top: 4px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .tabs {
-    display: flex;
-    background: #F3F4F6;
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 28px;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: transparent;
-    color: #6B7280;
-    font-family: inherit;
-  }
-  .tab-btn.active {
-    background: white;
-    color: #4F46E5;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
+body {
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  background: #0A0A0F;
+  overflow: hidden;
+}
 
-  .form-group { margin-bottom: 16px; }
-  .form-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 6px;
-  }
-  .form-group input {
-    width: 100%;
-    padding: 13px 16px;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 12px;
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: all 0.2s;
-    background: #F9FAFB;
-    color: #111827;
-  }
-  .form-group input:focus {
-    border-color: #4F46E5;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
-  }
+/* ── LEFT PANEL ── */
+.left-panel {
+  flex: 1;
+  background: linear-gradient(145deg, #1a0533 0%, #0d1b4b 40%, #0a0a1a 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
 
-  .submit-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #4F46E5, #7C3AED);
-    color: white;
-    border: none;
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s;
-    box-shadow: 0 4px 15px rgba(79,70,229,0.4);
-    margin-top: 4px;
-  }
-  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.5); }
-  .submit-btn:active { transform: translateY(0); }
+/* Animated orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: floatOrb 8s ease-in-out infinite;
+}
+.orb-1 { width: 400px; height: 400px; background: rgba(124,58,237,0.35); top: -100px; left: -100px; animation-delay: 0s; }
+.orb-2 { width: 300px; height: 300px; background: rgba(59,130,246,0.25); bottom: 100px; right: -50px; animation-delay: -3s; }
+.orb-3 { width: 200px; height: 200px; background: rgba(16,185,129,0.2); top: 50%; left: 60%; animation-delay: -5s; }
 
-  .msg {
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 10px;
-    border-radius: 10px;
-    margin-top: 14px;
-    display: none;
-  }
-  .msg.success { background: #D1FAE5; color: #059669; }
-  .msg.error { background: #FEE2E2; color: #EF4444; }
+@keyframes floatOrb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
 
-  .features {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid #F3F4F6;
-  }
-  .feature { text-align: center; }
-  .feature-icon { font-size: 20px; margin-bottom: 4px; }
-  .feature-text { font-size: 11px; color: #9CA3AF; font-weight: 500; }
+/* Grid lines */
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.left-content { position: relative; z-index: 2; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(124,58,237,0.2);
+  border: 1px solid rgba(124,58,237,0.4);
+  color: #A78BFA;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.badge-dot { width: 6px; height: 6px; background: #A78BFA; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+.left-title {
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -2px;
+  margin-bottom: 20px;
+  color: white;
+}
+.left-title .gradient-text {
+  background: linear-gradient(135deg, #A78BFA, #60A5FA, #34D399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.left-subtitle {
+  font-size: 16px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.7;
+  margin-bottom: 48px;
+  max-width: 380px;
+}
+
+/* Feature cards */
+.features { display: flex; flex-direction: column; gap: 14px; }
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 16px 20px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+.feature-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(167,139,250,0.3); transform: translateX(4px); }
+.feature-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.icon-purple { background: rgba(124,58,237,0.25); }
+.icon-blue { background: rgba(59,130,246,0.25); }
+.icon-green { background: rgba(16,185,129,0.25); }
+.icon-orange { background: rgba(245,158,11,0.25); }
+.feature-text h4 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 2px; }
+.feature-text p { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  width: 480px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  position: relative;
+}
+
+.form-container { width: 100%; max-width: 380px; }
+
+.form-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+.form-logo-icon {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 8px 20px rgba(79,70,229,0.35);
+}
+.form-logo-text h2 { font-size: 18px; font-weight: 800; color: #111827; }
+.form-logo-text p { font-size: 12px; color: #9CA3AF; margin-top: 1px; }
+
+.form-title { font-size: 28px; font-weight: 800; color: #111827; letter-spacing: -0.5px; margin-bottom: 6px; }
+.form-sub { font-size: 14px; color: #6B7280; margin-bottom: 32px; }
+
+.tabs {
+  display: flex;
+  background: #F3F4F6;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 28px;
+  gap: 4px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  color: #6B7280;
+  font-family: inherit;
+}
+.tab-btn.active {
+  background: white;
+  color: #4F46E5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+.input-wrap { position: relative; }
+.input-icon {
+  position: absolute;
+  left: 16px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #9CA3AF;
+  pointer-events: none;
+}
+.form-group input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s;
+  background: #FAFAFA;
+  color: #111827;
+}
+.form-group input:focus {
+  border-color: #4F46E5;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
+}
+
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.25s;
+  box-shadow: 0 4px 15px rgba(79,70,229,0.4);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.3px;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79,70,229,0.5); }
+.submit-btn:active { transform: translateY(0); }
+
+.msg {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-top: 14px;
+  display: none;
+}
+.msg.success { background: #D1FAE5; color: #059669; border: 1px solid #A7F3D0; }
+.msg.error { background: #FEE2E2; color: #EF4444; border: 1px solid #FECACA; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  color: #D1D5DB;
+  font-size: 12px;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #E5E7EB; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid #F3F4F6;
+}
+.stat { text-align: center; }
+.stat-num { font-size: 20px; font-weight: 800; color: #4F46E5; }
+.stat-lbl { font-size: 11px; color: #9CA3AF; font-weight: 500; margin-top: 2px; }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .left-panel { display: none; }
+  .right-panel { width: 100%; padding: 40px 24px; }
+}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo">
-    <div class="logo-icon">⚡</div>
-    <h1>Project Manager AI</h1>
-    <p>Autonomous AI-Powered Project Management</p>
-  </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
-    <button class="tab-btn" onclick="switchTab('register')">Create Account</button>
-  </div>
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="grid-lines"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
-  <!-- Login Form -->
-  <div id="loginForm">
-    <div class="form-group">
-      <label>Username</label>
-      <input type="text" id="loginUser" placeholder="Enter your username">
+  <div class="left-content">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      AI Automation Platform
     </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="loginPass" placeholder="Enter your password">
-    </div>
-    <button class="submit-btn" onclick="login()">Sign In →</button>
-    <div id="loginMsg" class="msg"></div>
-  </div>
 
-  <!-- Register Form -->
-  <div id="registerForm" style="display:none">
-    <div class="form-group">
-      <label>Username</label>
-      <input type="text" id="regUser" placeholder="Choose a username">
-    </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="regEmail" placeholder="your@email.com">
-    </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="regPass" placeholder="Create a password">
-    </div>
-    <button class="submit-btn" onclick="register()">Create Account →</button>
-    <div id="registerMsg" class="msg"></div>
-  </div>
+    <h1 class="left-title">
+      Manage projects<br>with <span class="gradient-text">AI intelligence</span>
+    </h1>
 
-  <div class="features">
-    <div class="feature">
-      <div class="feature-icon">🧠</div>
-      <div class="feature-text">AI Briefings</div>
+    <p class="left-subtitle">
+      Stop managing manually. Let AI track deadlines, detect risks,
+      generate reports and brief you every morning — automatically.
+    </p>
+
+    <div class="features">
+      <div class="feature-item">
+        <div class="feature-icon icon-purple">🧠</div>
+        <div class="feature-text">
+          <h4>AI Daily Briefings</h4>
+          <p>Personalized morning summaries powered by LLaMA 3.1</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon icon-blue">💬</div>
+        <div class="feature-text">
+          <h4>Conversational AI Assistant</h4>
+          <p>Ask anything about your tasks in plain English</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon icon-green">⚠️</div>
+        <div class="feature-text">
+          <h4>Autonomous Risk Engine</h4>
+          <p>Detects HIGH / MEDIUM / LOW risk 24/7 without input</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon icon-orange">📄</div>
+        <div class="feature-text">
+          <h4>Auto PDF Reports</h4>
+          <p>Completion reports emailed to clients instantly</p>
+        </div>
+      </div>
     </div>
-    <div class="feature">
-      <div class="feature-icon">⚠️</div>
-      <div class="feature-text">Risk Engine</div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="form-container">
+    <div class="form-logo">
+      <div class="form-logo-icon">⚡</div>
+      <div class="form-logo-text">
+        <h2>Project Manager AI</h2>
+        <p>by Team Code Raiders</p>
+      </div>
     </div>
-    <div class="feature">
-      <div class="feature-icon">📄</div>
-      <div class="feature-text">Auto Reports</div>
+
+    <h1 class="form-title" id="formTitle">Welcome back</h1>
+    <p class="form-sub" id="formSub">Sign in to your workspace</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('register')">Create Account</button>
     </div>
-    <div class="feature">
-      <div class="feature-icon">💬</div>
-      <div class="feature-text">AI Chat</div>
+
+    <!-- Login -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="loginUser" placeholder="Enter your username">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="loginPass" placeholder="Enter your password">
+        </div>
+      </div>
+      <button class="submit-btn" onclick="login()">
+        Sign In <span>→</span>
+      </button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+
+    <!-- Register -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="regUser" placeholder="Choose a username">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input type="email" id="regEmail" placeholder="your@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="regPass" placeholder="Create a strong password">
+        </div>
+      </div>
+      <button class="submit-btn" onclick="register()">
+        Create Account <span>→</span>
+      </button>
+      <div id="registerMsg" class="msg"></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-lbl">AI Monitoring</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">80%</div>
+        <div class="stat-lbl">Time Saved</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-lbl">Manual Reports</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
-  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  const isLogin = tab === 'login';
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', isLogin ? i===0 : i===1));
+  document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('formTitle').textContent = isLogin ? 'Welcome back' : 'Create account';
+  document.getElementById('formSub').textContent = isLogin ? 'Sign in to your workspace' : 'Start managing projects with AI';
 }
 
 function showMsg(id, text, type) {
@@ -221,44 +452,58 @@ function showMsg(id, text, type) {
 async function login() {
   const username = document.getElementById('loginUser').value.trim();
   const password = document.getElementById('loginPass').value.trim();
-  if (!username || !password) { showMsg('loginMsg', 'Please fill all fields', 'error'); return; }
-  const res = await fetch('/login', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({username, password, email: ''})
-  });
-  const data = await res.json();
-  if (data.message === 'Login successful') {
-    showMsg('loginMsg', '✅ Welcome back! Redirecting...', 'success');
-    setTimeout(() => window.location.href = '/', 800);
-  } else {
-    showMsg('loginMsg', data.error || 'Login failed', 'error');
-  }
+  if (!username || !password) { showMsg('loginMsg', '⚠️ Please fill all fields', 'error'); return; }
+  const btn = document.querySelector('#loginForm .submit-btn');
+  btn.textContent = 'Signing in...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, password, email: ''})
+    });
+    const data = await res.json();
+    if (data.message === 'Login successful') {
+      showMsg('loginMsg', '✅ Welcome back! Redirecting...', 'success');
+      setTimeout(() => window.location.href = '/', 800);
+    } else {
+      showMsg('loginMsg', data.error || '❌ Login failed', 'error');
+      btn.innerHTML = 'Sign In <span>→</span>';
+      btn.disabled = false;
+    }
+  } catch { showMsg('loginMsg', '❌ Connection error', 'error'); btn.innerHTML = 'Sign In <span>→</span>'; btn.disabled = false; }
 }
 
 async function register() {
   const username = document.getElementById('regUser').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPass').value.trim();
-  if (!username || !email || !password) { showMsg('registerMsg', 'Please fill all fields', 'error'); return; }
-  const res = await fetch('/register', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({username, email, password})
-  });
-  const data = await res.json();
-  if (data.message) {
-    showMsg('registerMsg', '✅ Account created! Signing in...', 'success');
-    setTimeout(() => switchTab('login'), 1500);
-  } else {
-    showMsg('registerMsg', data.error || 'Registration failed', 'error');
-  }
+  if (!username || !email || !password) { showMsg('registerMsg', '⚠️ Please fill all fields', 'error'); return; }
+  const btn = document.querySelector('#registerForm .submit-btn');
+  btn.textContent = 'Creating account...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, email, password})
+    });
+    const data = await res.json();
+    if (data.message) {
+      showMsg('registerMsg', '✅ Account created! Sign in now.', 'success');
+      setTimeout(() => switchTab('login'), 1500);
+    } else {
+      showMsg('registerMsg', data.error || '❌ Registration failed', 'error');
+      btn.innerHTML = 'Create Account <span>→</span>';
+      btn.disabled = false;
+    }
+  } catch { showMsg('registerMsg', '❌ Connection error', 'error'); btn.innerHTML = 'Create Account <span>→</span>'; btn.disabled = false; }
 }
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
-    const active = document.getElementById('loginForm').style.display !== 'none';
-    if (active) login(); else register();
+    const isLogin = document.getElementById('loginForm').style.display !== 'none';
+    if (isLogin) login(); else register();
   }
 });
 </script>
