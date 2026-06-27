@@ -83,6 +83,62 @@ def create_task(task: TaskCreate, token: str = Cookie(None)):
     db.commit()
     db.refresh(new_task)
     db.close()
+
+    # Send email notification on task creation
+    try:
+        from notifier import send_email, send_whatsapp
+        from datetime import timedelta
+        IST = timedelta(hours=5, minutes=30)
+        due_ist = (new_task.due_date + IST).strftime("%d %b %Y %I:%M %p")
+
+        email_body = f"""
+        <html><body style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px">
+        <div style="max-width:600px;margin:auto;background:white;border-radius:12px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.1)">
+          <h2 style="color:#1e3c72">📋 New Task Created</h2>
+          <p>Hi <strong>{user.username}</strong>, a new task has been added to your project manager.</p>
+          <table style="width:100%;border-collapse:collapse;margin:20px 0">
+            <tr style="background:#f8f9ff"><td style="padding:10px;font-weight:bold">Task</td><td style="padding:10px">{new_task.title}</td></tr>
+            <tr><td style="padding:10px;font-weight:bold">Client</td><td style="padding:10px">{new_task.client_name}</td></tr>
+            <tr style="background:#f8f9ff"><td style="padding:10px;font-weight:bold">Due Date</td><td style="padding:10px">{due_ist} IST</td></tr>
+            <tr><td style="padding:10px;font-weight:bold">Status</td><td style="padding:10px"><span style="color:green;font-weight:bold">✅ Active</span></td></tr>
+          </table>
+          <p style="color:#666">Login to your dashboard to track this task:</p>
+          <a href="https://project-manager-bot-production.up.railway.app" style="background:#1e3c72;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block">Open Dashboard</a>
+          <p style="color:#aaa;font-size:12px;margin-top:20px">AI-Powered Project Manager Bot</p>
+        </div></body></html>
+        """
+
+        # Email to user
+        if user.email:
+            send_email(user.email, f"📋 New Task: {new_task.title}", email_body)
+
+        # Email to client
+        if new_task.client_email:
+            client_body = f"""
+            <html><body style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px">
+            <div style="max-width:600px;margin:auto;background:white;border-radius:12px;padding:30px">
+              <h2 style="color:#1e3c72">👋 Project Update from {user.username}</h2>
+              <p>Dear <strong>{new_task.client_name}</strong>,</p>
+              <p>A new task has been created for your project.</p>
+              <table style="width:100%;border-collapse:collapse;margin:20px 0">
+                <tr style="background:#f8f9ff"><td style="padding:10px;font-weight:bold">Task</td><td style="padding:10px">{new_task.title}</td></tr>
+                <tr><td style="padding:10px;font-weight:bold">Due Date</td><td style="padding:10px">{due_ist} IST</td></tr>
+                <tr style="background:#f8f9ff"><td style="padding:10px;font-weight:bold">Manager</td><td style="padding:10px">{user.username}</td></tr>
+              </table>
+              <p style="color:#aaa;font-size:12px">Sent by AI-Powered Project Manager Bot</p>
+            </div></body></html>
+            """
+            send_email(new_task.client_email, f"📬 New Task Started: {new_task.title}", client_body)
+
+        # WhatsApp to user
+        whatsapp_msg = f"📋 *New Task Created*\n\n*Task:* {new_task.title}\n*Client:* {new_task.client_name}\n*Due:* {due_ist} IST\n\nLogin: https://project-manager-bot-production.up.railway.app"
+        user_phone = getattr(user, 'phone', None)
+        if user_phone:
+            send_whatsapp(user_phone, whatsapp_msg)
+
+    except Exception as e:
+        print(f"Notification error: {e}")
+
     return {"message": "Task created", "task_id": new_task.id}
 
 @app.put("/tasks/{task_id}/complete")
