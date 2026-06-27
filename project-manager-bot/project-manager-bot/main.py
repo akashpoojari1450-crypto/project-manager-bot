@@ -168,7 +168,7 @@ def complete_task(task_id: int, token: str = Cookie(None)):
             from email.mime.base import MIMEBase
             from email import encoders
             from dotenv import load_dotenv
-            load_dotenv("/workspaces/project-manager-bot/project-manager-bot/project-manager-bot/.env")
+            load_dotenv()  # loads from working directory / real env vars (Railway sets these directly)
             import os
             sender = os.getenv("EMAIL_USER")
             password = os.getenv("EMAIL_PASSWORD")

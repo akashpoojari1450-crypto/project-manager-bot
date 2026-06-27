@@ -5,7 +5,24 @@ from datetime import datetime
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./tasks.db")
-engine = create_engine(DATABASE_URL)
+
+# SQLite-specific settings: allow use across threads (needed since the
+# scheduler runs in a background thread separate from request handlers),
+# and give a longer busy-timeout so a request that arrives while another
+# connection briefly holds a write lock waits instead of failing fast.
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False, "timeout": 30},
+    )
+    # WAL mode lets readers proceed while a writer is committing, instead
+    # of blocking the whole file. This is the main fix for "dashboard
+    # stuck on Loading..." when the scheduler is mid-write.
+    with engine.connect() as conn:
+        conn.exec_driver_sql("PRAGMA journal_mode=WAL")
+else:
+    engine = create_engine(DATABASE_URL)
+
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
