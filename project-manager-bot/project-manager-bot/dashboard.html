@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Manager AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1D4ED8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="PM AI">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Inter', sans-serif; background: #F0F4FF; min-height: 100vh; }
@@ -147,6 +153,7 @@ body.dark .msg.bot { background: #0f172a; color: #e2e8f0; }
     <button class="nav-btn" onclick="getDailyBriefing()">🧠 Briefing</button>
     <button class="nav-btn" onclick="getHoroscope()">🔮 Horoscope</button>
     <button class="nav-btn" id="darkBtn" onclick="toggleDark()">🌙 Dark</button>
+    <button class="nav-btn" id="installBtn" onclick="installApp()" style="display:none;background:rgba(16,185,129,0.3);border-color:rgba(16,185,129,0.5)">📲 Install App</button>
     <button class="nav-btn red" onclick="logout()">🚪 Logout</button>
   </div>
 </div>
@@ -454,7 +461,35 @@ body.dark .msg.bot { background: #0f172a; color: #e2e8f0; }
     messages.scrollTop = messages.scrollHeight;
   }
 
-  if (localStorage.getItem('darkMode') === 'true') {
+
+  // PWA Install prompt
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn').style.display = 'block';
+  });
+
+  function installApp() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(result) {
+        if (result.outcome === 'accepted') {
+          document.getElementById('installBtn').style.display = 'none';
+        }
+        deferredPrompt = null;
+      });
+    }
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function() { console.log('SW registered'); })
+      .catch(function(err) { console.log('SW error:', err); });
+  }
+
+  if (localStorage.getItem('darkMode') === 'true' {
     document.body.classList.add('dark');
     document.getElementById('darkBtn').textContent = '☀️ Light';
   }
