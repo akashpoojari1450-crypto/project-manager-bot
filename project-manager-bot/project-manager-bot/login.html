@@ -382,7 +382,9 @@ body {
       <button class="submit-btn" onclick="login()">
         Sign In <span>→</span>
       </button>
-      <div id="loginMsg" class="msg"></div>
+      <div id="loginMsg" class="msg"></div>      <div style="text-align:center;margin-top:14px">
+        <a href="#" onclick="showForgot()" style="font-size:13px;color:#1D4ED8;text-decoration:none;font-weight:500">Forgot password?</a>
+      </div>
     </div>
 
     <!-- Register -->
@@ -506,6 +508,116 @@ document.addEventListener('keydown', e => {
     if (isLogin) login(); else register();
   }
 });
+
+function showForgot() {
+  document.getElementById('forgotModal').style.display = 'flex';
+  document.getElementById('step1').style.display = 'block';
+  document.getElementById('step2').style.display = 'none';
+}
+function hideForgot() {
+  document.getElementById('forgotModal').style.display = 'none';
+}
+
+async function sendOTP() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) { showForgotMsg('otpMsg', 'Please enter your email', 'error'); return; }
+  const btn = document.querySelector('#step1 button');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  try {
+    const res = await fetch('/forgot-password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email})
+    });
+    const data = await res.json();
+    if (data.message) {
+      showForgotMsg('otpMsg', '✅ OTP sent! Check your email.', 'success');
+      setTimeout(() => {
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+      }, 1500);
+    } else {
+      showForgotMsg('otpMsg', data.error || 'Failed to send OTP', 'error');
+      btn.textContent = 'Send OTP →'; btn.disabled = false;
+    }
+  } catch {
+    showForgotMsg('otpMsg', 'Connection error', 'error');
+    btn.textContent = 'Send OTP →'; btn.disabled = false;
+  }
+}
+
+async function resetPassword() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const otp = document.getElementById('otpInput').value.trim();
+  const new_password = document.getElementById('newPassword').value.trim();
+  if (!otp || !new_password) { showForgotMsg('resetMsg', 'Fill all fields', 'error'); return; }
+  const btn = document.querySelector('#step2 button');
+  btn.textContent = 'Resetting...'; btn.disabled = true;
+  try {
+    const res = await fetch('/reset-password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, otp, new_password})
+    });
+    const data = await res.json();
+    if (data.message) {
+      showForgotMsg('resetMsg', '✅ Password reset! You can now login.', 'success');
+      setTimeout(() => { hideForgot(); switchTab('login'); }, 2000);
+    } else {
+      showForgotMsg('resetMsg', data.error || 'Reset failed', 'error');
+      btn.textContent = 'Reset Password →'; btn.disabled = false;
+    }
+  } catch {
+    showForgotMsg('resetMsg', 'Connection error', 'error');
+    btn.textContent = 'Reset Password →'; btn.disabled = false;
+  }
+}
+
+function showForgotMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  el.style.display = 'block';
+}
+
 </script>
+
+<!-- Forgot Password Modal -->
+<div id="forgotModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:20px;padding:32px;width:90%;max-width:400px;position:relative">
+    <button onclick="hideForgot()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#666">✕</button>
+
+    <!-- Step 1: Enter Email -->
+    <div id="step1">
+      <h2 style="font-size:20px;font-weight:800;color:#111827;margin-bottom:6px">🔐 Forgot Password</h2>
+      <p style="font-size:13px;color:#6B7280;margin-bottom:20px">Enter your email to receive an OTP</p>
+      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Email Address</label>
+      <input id="forgotEmail" type="email" placeholder="your@email.com"
+        style="width:100%;padding:12px 16px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;outline:none;margin-bottom:14px;font-family:inherit">
+      <button onclick="sendOTP()"
+        style="width:100%;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:white;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        Send OTP →
+      </button>
+      <div id="otpMsg" class="msg"></div>
+    </div>
+
+    <!-- Step 2: Enter OTP + New Password -->
+    <div id="step2" style="display:none">
+      <h2 style="font-size:20px;font-weight:800;color:#111827;margin-bottom:6px">✅ Enter OTP</h2>
+      <p style="font-size:13px;color:#6B7280;margin-bottom:20px">Check your email for the 6-digit OTP</p>
+      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px">OTP Code</label>
+      <input id="otpInput" type="text" placeholder="Enter 6-digit OTP" maxlength="6"
+        style="width:100%;padding:12px 16px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:18px;font-weight:700;letter-spacing:6px;text-align:center;outline:none;margin-bottom:14px;font-family:inherit">
+      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px">New Password</label>
+      <input id="newPassword" type="password" placeholder="Enter new password"
+        style="width:100%;padding:12px 16px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;outline:none;margin-bottom:14px;font-family:inherit">
+      <button onclick="resetPassword()"
+        style="width:100%;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:white;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        Reset Password →
+      </button>
+      <div id="resetMsg" class="msg"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
