@@ -76,15 +76,16 @@
       background: rgba(255,255,255,0.15);
       color: white;
       border: 1px solid rgba(255,255,255,0.3);
-      padding: 6px 14px;
+      padding: 7px 16px;
       border-radius: 20px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       white-space: nowrap;
       transition: all 0.2s;
+      font-family: inherit;
     }
-    .logout-btn:hover { background: rgba(255,255,255,0.25); }
+    .logout-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
 
     /* ── CONTAINER ── */
     .container { max-width: 780px; margin: 0 auto; padding: 24px 16px; }
@@ -360,11 +361,11 @@
     <h1>📋 Project Manager</h1>
     <div class="navbar-right">
       <span class="username" id="username-display"></span>
-      <button class="logout-btn" onclick="getDailyBriefing()" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);margin-right:8px">🧠 Briefing</button>
-      <button class="logout-btn" onclick="getHoroscope()" style="background:linear-gradient(135deg,#4a148c,#aa00ff);margin-right:8px">🔮 Horoscope</button>
-      <button class="logout-btn" onclick="toggleDark()" id="darkBtn" style="margin-right:8px">🌙 Dark</button>
+      <button class="logout-btn" onclick="getDailyBriefing()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25)">🧠 Briefing</button>
+      <button class="logout-btn" onclick="getHoroscope()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25)">🔮 Horoscope</button>
+      <button class="logout-btn" onclick="toggleDark()" id="darkBtn" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25)">🌙 Dark</button>
       <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:20px;font-size:13px;">👥 Teams</a>
-      <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 10px;border-radius:20px;font-size:12px;white-space:nowrap;">👥 Teams</a><button class="logout-btn" onclick="logout()">Logout</button>
+      <a href="/teams-page" style="color:white;text-decoration:none;background:rgba(255,255,255,0.2);padding:6px 10px;border-radius:20px;font-size:12px;white-space:nowrap;">👥 Teams</a><button class="logout-btn" onclick="logout()" style="background:rgba(239,68,68,0.25);border:1px solid rgba(239,68,68,0.4)">🚪 Logout</button>
     </div>
   </div>
 
@@ -488,7 +489,7 @@
     }
 
     async function logout() {
-      await fetch("/logout", { method: "POST" });
+      try { await fetch("/logout", { method: "POST" }); } catch(e) {}
       window.location.href = "/login-page";
     }
 
@@ -616,13 +617,17 @@
 function toggleDark() {
     const isDark = document.body.classList.toggle('dark');
     localStorage.setItem('darkMode', isDark);
-    document.getElementById('darkBtn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+    const btn = document.getElementById('darkBtn');
+    if (btn) btn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
 }
 // Apply saved preference on load
-if (localStorage.getItem('darkMode') === 'true') {
-    document.body.classList.add('dark');
-    document.getElementById('darkBtn').textContent = '☀️ Light';
-}
+window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+        const btn = document.getElementById('darkBtn');
+        if (btn) btn.textContent = '☀️ Light';
+    }
+});
 
 function toggleChat() {
     const box = document.getElementById('chatBox');
