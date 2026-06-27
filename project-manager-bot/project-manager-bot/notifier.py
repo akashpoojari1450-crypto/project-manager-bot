@@ -2,12 +2,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
-from dotenv import load_dotenv
-load_dotenv()
 
 def send_email(to_email, subject, body):
-    sender = os.getenv("EMAIL_USER")
-    password = os.getenv("EMAIL_PASSWORD")
+    sender = os.environ.get("EMAIL_USER")
+    password = os.environ.get("EMAIL_PASSWORD")
+    print(f"DEBUG: sender={sender} password={'SET' if password else 'MISSING'}")
     if not sender or not password:
         print("Email credentials missing")
         return False
@@ -31,9 +30,9 @@ def send_email(to_email, subject, body):
 def send_whatsapp(to_number, message):
     try:
         from twilio.rest import Client
-        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-        from_number = os.getenv("TWILIO_WHATSAPP_NUMBER", "whatsapp:+14155238886")
+        account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+        from_number = os.environ.get("TWILIO_WHATSAPP_NUMBER", "whatsapp:+14155238886")
         if not account_sid or not auth_token:
             print("Twilio credentials missing - skipping WhatsApp")
             return False
